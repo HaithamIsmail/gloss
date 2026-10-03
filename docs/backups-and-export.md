@@ -16,6 +16,8 @@ Open **Backups and export** at the bottom of the sidebar (`/backups`).
 
 ## Automatic backups
 
+![Backups and export](images/backups.png)
+
 Each time Gloss **starts**, it copies its database to `data/backups/gloss-2026-10-03_14-05-12.db`.
 
 - The copy is skipped when nothing changed since the last backup (so restarting several times doesn't push useful
@@ -93,6 +95,8 @@ How things are written:
 | Notebook | markdown cells as-is, code in ```` ```python ```` fences, text output in fences, plots as pictures |
 
 ## Print and PDF
+
+![The printable view of a page](images/print.png)
 
 **Print or save as PDF** opens a clean, printable version of a course or material in a new tab:
 

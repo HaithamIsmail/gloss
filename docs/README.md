@@ -4,6 +4,8 @@
 
 Everything Gloss can do, chapter by chapter.
 
+![Gloss: a page with an annotated diagram, numbered sections and the index](images/regions.png)
+
 ## Using Gloss
 
 | Chapter | What's in it |

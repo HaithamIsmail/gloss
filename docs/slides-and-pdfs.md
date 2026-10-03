@@ -58,6 +58,8 @@ if you install LibreOffice later, restart Gloss.
 
 ## What you get
 
+![An imported PDF: a folder with one annotated page per slide](images/folder.png)
+
 - A **folder** at the end of the course, named after the file (e.g. *Lecture 3*).
 - Inside it, one **annotated image page per slide**, in order. Each page:
   - shows the slide as a sharp image (rendered about 2000 pixels wide);
@@ -68,6 +70,8 @@ if you install LibreOffice later, restart Gloss.
 - The original file is kept: the folder page links to it (and, for decks, to the converted PDF).
 
 ## Moving between slides
+
+![A slide with regions, and the previous/next controls](images/image-page-2.png)
 
 On a page inside a folder, the toolbar shows **‹** *3/32* **›** and the label reads *Course · Folder · 3 of 32*.
 

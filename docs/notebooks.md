@@ -20,6 +20,8 @@ install) or in **one of your own Python environments** (venv, conda, pyenv…) t
 
 ## The notebook page
 
+![A notebook with code, markdown and a matplotlib plot](images/notebook.png)
+
 - **Label:** course code · course name · *Notebook*, then the **title**.
 - **Toolbar** (stays at the top while you scroll):
 

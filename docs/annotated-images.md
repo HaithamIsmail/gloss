@@ -86,6 +86,8 @@ The look of linked passages is set in **View options → Linked passages**: *Mar
 
 ## Hover highlighting and the preview
 
+![Hovering a linked passage highlights its region and comment](images/regions.png)
+
 Hovering a **region box**, its **comment**, or a **linked passage** highlights all three: the box is outlined and the
 other boxes fade, the comment is tinted, and every passage of that region is marked.
 
@@ -98,6 +100,8 @@ The icon in the block's header switches between comments **beside the image** (d
 image** (as a grid of cards). In a narrow window the comments always go below.
 
 ## Annotated image pages
+
+![An annotated image page: a slide with three regions and their comments](images/image-page.png)
 
 Create one with **New material → Annotated image**, or import slides (every slide becomes one —
 see [Slides and PDFs](slides-and-pdfs.md)). The image fills the left side and its comments the right.

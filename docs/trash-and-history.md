@@ -13,6 +13,8 @@ keeps **earlier versions** of its content while you edit.
 
 ## The Trash
 
+![The Trash](images/trash.png)
+
 Open **Trash** at the bottom of the sidebar (`/trash`). It lists everything deleted in the last 30 days, newest first.
 Each row shows:
 
@@ -64,6 +66,8 @@ Deleting for good removes the database rows, including the material's version hi
 stay in `data/uploads/` (see [Known limits](troubleshooting.md#known-limits)).
 
 ## Version history
+
+![Version history with a preview of an earlier version](images/history.png)
 
 Open a page, image page or notebook and choose **⋯ → Version history** in the top bar (folders have no content of
 their own, so they don't have it).

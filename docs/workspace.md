@@ -31,6 +31,8 @@ and moving things.
 
 ## The sidebar
 
+![A course page with the sidebar tree on the left](images/course.png)
+
 From top to bottom:
 
 - **Gloss** logo — back to all courses.
@@ -82,6 +84,8 @@ of materials, sections and regions. Click a card to open the course; **+ New cou
 
 ## Creating materials
 
+![The New material menu](images/new-material.png)
+
 **+ New material** on a course page, the **+** next to a course in the sidebar, or **Add material** under an open
 course opens a menu:
 
@@ -101,6 +105,8 @@ Inside a folder, **Add to folder** (on the folder page) or the folder's **+** (s
 Notebook and Import notebook — folders can't contain folders, and slide imports always make their own folder.
 
 ## Moving and organising
+
+![The Move to… dialog](images/move.png)
 
 **Drag and drop in the sidebar**
 
@@ -122,6 +128,8 @@ reorder them.
 to filter. The current place is marked *Current place*. A message confirms *Moved "…" to …*.
 
 ## Search
+
+![Search results for “ventricle”](images/search.png)
 
 Press `Ctrl K` (`⌘K` on a Mac) anywhere, or click **Search** in the sidebar.
 

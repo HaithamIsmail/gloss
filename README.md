@@ -9,6 +9,8 @@ images get numbered **regions** whose comments link to passages in your text —
 also has Jupyter-style notebooks, an Excalidraw canvas, slide and PDF import, formulas, links between pages, a trash,
 version history, backups and exports. It runs on your own computer; your notes stay in a local folder.
 
+![Hovering a linked passage lights up its region on the diagram and its comment](docs/images/regions.png)
+
 > The name: a *gloss* is the note a scribe wrote beside a passage or picture to explain it (it is where "glossary"
 > comes from). The logo is the app's own region marker — a box with its number badge — on the brand red.
 
@@ -31,6 +33,19 @@ version history, backups and exports. It runs on your own computer; your notes s
 - **Nothing gets lost.** Trash with Undo (30 days), version history, a database backup every time the app starts.
 - **Take it with you.** Export a course as Markdown or PDF, or everything as one zip.
 - **Guided tour** on first launch, with Skip; replay it from the sidebar.
+
+## Screenshots
+
+| | |
+| --- | --- |
+| ![A page with numbered sections and the index](docs/images/page.png) | ![An imported slide with regions and comments](docs/images/image-page.png) |
+| **Pages** with numbered sections and a live index | **Slides** imported from a PDF, annotated region by region |
+| ![A notebook with a matplotlib plot](docs/images/notebook.png) | ![An Excalidraw drawing](docs/images/canvas.png) |
+| **Notebooks** running Python in the browser or your own env | **Canvas** drawings you can place on any page |
+| ![Search results](docs/images/search.png) | ![Version history](docs/images/history.png) |
+| **Search** everything with `Ctrl K` | **Version history**, trash and backups |
+
+More in the [documentation](docs/README.md).
 
 ## Quick start
 

@@ -16,6 +16,8 @@ single shared object: it lives in the **Canvas** and can be shown on any number 
 
 ## The Canvas list
 
+![The Canvas list](images/canvas-list.png)
+
 Open it with **Canvas** in the sidebar (`/canvas`).
 
 - The header shows how many drawings you have: *"3 drawings · sketches, diagrams and mind maps. Add any of them to a
@@ -30,6 +32,8 @@ Open it with **Canvas** in the sidebar (`/canvas`).
 - Click a card to open the drawing.
 
 ## Editing a drawing
+
+![Editing a drawing](images/canvas.png)
 
 The drawing opens full width with a toolbar above the canvas:
 

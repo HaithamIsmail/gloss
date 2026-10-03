@@ -330,7 +330,10 @@ a.btn-secondary {
 }
 
 .mention.is-region .mention-label {
+  display: inline-block;
   max-width: 30ch;
+  white-space: nowrap;
+  vertical-align: bottom;
 }
 
 .mention-in {

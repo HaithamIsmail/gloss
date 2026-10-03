@@ -48,13 +48,17 @@ settings.
 
 ## First launch and the guided tour
 
-The first time you open Gloss in a browser, a **guided tour** walks you through the app in about 16 short steps:
+![The guided tour's welcome card](images/tour-welcome.png)
+
+The first time you open Gloss in a browser, a **guided tour** walks you through the app in about 17 short steps:
 
 1. **Welcome** — choose **Show me around**, or **Skip, I'll explore**.
 2. Each step dims the screen, outlines one part of the app in red and explains it next to it. It opens the pages it
    talks about (a course, a page with an annotated image, a notebook…) by itself.
 3. Use **Next** / **Back** (or `→` / `←`, `Enter`), or **Skip tour** / the ✕ (or `Esc`) at any time. A bar shows how far
    along you are.
+
+![A tour step pointing at an annotated image](images/tour-step.png)
 
 The tour covers: the course tree, search, adding materials, organising and exporting a course, writing with blocks,
 the index, annotated images, formulas and `@` links, the page and view menus, notebooks and kernels, image pages,
@@ -66,6 +70,8 @@ Once finished or skipped, the tour doesn't come back by itself (your browser rem
 
 ## The sample courses
 
+![All courses with the sample workspace](images/home.png)
+
 On a brand-new installation, Gloss fills the workspace with examples that show every kind of content:
 
 - **Human Anatomy (ANAT 201)**
@@ -76,6 +82,9 @@ On a brand-new installation, Gloss fills the workspace with examples that show e
   - *Eigenvalues and eigenvectors* — inline formulas and a formula block.
   - *Eigenvalues in Python* — a notebook using numpy.
 - **Organic Chemistry (CHEM 230)** — empty, ready for you.
+
+The screenshots in this documentation use these courses plus an imported lecture PDF (*Lecture 2 · Alkanes and
+Conformations*), a folder of problem sets and two drawings.
 
 Delete them whenever you like (they go to the Trash). To start with an empty workspace instead, set `SEED=0` before the
 very first launch (see [Configuration](configuration.md)).

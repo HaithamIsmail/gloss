@@ -22,6 +22,8 @@ annotated images, drawings and links to other materials.
 
 ## Anatomy of a page
 
+![A page with numbered sections, a callout and the index](images/page.png)
+
 - **Label** above the title: course code · course name.
 - **Title** — click to rename. On a new page the title is selected so you can type over it. `Enter` or `↓` in the
   title jumps into the page.
@@ -43,6 +45,8 @@ next change. Leaving the page also sends anything pending, and closing the tab m
 comments on images.
 
 ## The / menu
+
+![The / block menu](images/slash-menu.png)
 
 Type `/` at the start of a line (or anywhere) to open the block menu, then type to filter it (e.g. `/tab`, `/form`).
 Use `↑` `↓` and `Enter`, or click. On an empty line the block replaces the line; otherwise it is added below.
@@ -145,6 +149,8 @@ merge and split cells, and colour cells. **Header row** and **Header column** ar
 
 ## Formulas (LaTeX)
 
+![Inline formulas and a formula block being edited](images/formulas.png)
+
 Formulas are written in LaTeX and drawn with [KaTeX](https://katex.org).
 
 **A formula inside a line**
@@ -166,6 +172,8 @@ Mistakes in LaTeX are shown in red instead of breaking the page. Formulas are ke
 [Markdown exports](backups-and-export.md#markdown-export) and printed in PDFs.
 
 ## Links to other materials (@)
+
+![The @ menu searching regions, above a region link and a page link](images/mention-menu.png)
 
 Type `@` to link another material:
 
@@ -194,6 +202,8 @@ Every material shows **Linked from** with the pages that link to it.
 
 ## View options
 
+![The view options menu](images/view-menu.png)
+
 The **sliders** icon in the top bar (*Page view options*):
 
 | Option | Effect |
@@ -206,6 +216,8 @@ The **sliders** icon in the top bar (*Page view options*):
 These choices are remembered by your browser and apply to every page.
 
 ## The page menu (⋯)
+
+![The page menu](images/page-menu.png)
 
 The **⋯** icon in the top bar (*More actions*):
 
