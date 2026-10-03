@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<style>html,body{margin:0;height:100%;overflow:hidden}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent)}textarea::placeholder,input::placeholder{color:var(--color-neutral-500)}button{font-family:inherit}</style>
+</helmet>
+<div onClick="{{ closeMenus }}" style="display:flex;height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+  <input type="file" accept="image/*" ref="{{ fileRef }}" onChange="{{ onFile }}" style="display:none">
+
+  <aside style="flex:0 0 264px;display:flex;flex-direction:column;background:var(--color-surface);border-right:2px solid var(--color-divider);min-height:0">
+    <div style="padding:16px;border-bottom:2px solid var(--color-divider);display:flex;align-items:center;gap:10px">
+      <div style="width:20px;height:20px;background:var(--color-accent)"></div>
+      <div style="font-weight:800;font-size:15px;letter-spacing:-0.01em">Study workspace</div>
+    </div>
+    <div style="padding:10px 8px 0;display:flex;flex-direction:column;gap:2px">
+      <button onClick="{{ openSearch }}" style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:0;background:transparent;font-size:14px;color:var(--color-text);cursor:pointer;text-align:left" style-hover="background:var(--color-neutral-300)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        <span style="flex:1">Search</span>
+        <span style="font-size:11px;color:var(--color-neutral-700);border:1px solid var(--color-neutral-500);padding:1px 5px">⌘K</span>
+      </button>
+      <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:0;background:{{ homeBg }};font-size:14px;color:var(--color-text);cursor:pointer;text-align:left" style-hover="background:var(--color-neutral-300)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+        <span>All courses</span>
+      </button>
+    </div>
+    <div style="padding:18px 16px 6px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Courses</div>
+    <div style="flex:1;overflow:auto;padding:0 8px 12px">
+      <sc-for list="{{ navRows }}" as="r" hint-placeholder-count="6">
+        <div onClick="{{ r.click }}" style="display:flex;align-items:center;gap:6px;padding:4px 8px 4px {{ r.pad }}px;cursor:pointer;background:{{ r.bg }};color:{{ r.fg }};font-size:{{ r.fs }}px;font-weight:{{ r.fw }};min-height:30px" style-hover="background:var(--color-neutral-300)">
+          <sc-if value="{{ r.isCourse }}">
+            <button onClick="{{ r.toggle }}" style="flex:none;width:20px;height:20px;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:inherit" style-hover="background:var(--color-neutral-400)">
+              <sc-if value="{{ r.open }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></sc-if>
+              <sc-if value="{{ r.closed }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></sc-if>
+            </button>
+          </sc-if>
+          <sc-if value="{{ r.isMat }}"><svg style="flex:none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg></sc-if>
+          <sc-if value="{{ r.isAdd }}"><svg style="flex:none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></sc-if>
+          <sc-if value="{{ r.hasNum }}"><span style="flex:none;color:var(--color-accent-700);font-variant-numeric:tabular-nums">{{ r.num }}</span></sc-if>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</span>
+        </div>
+      </sc-for>
+      <button onClick="{{ addCourse }}" style="display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;padding:6px 8px;border:0;background:transparent;font-size:14px;color:var(--color-neutral-700);cursor:pointer;text-align:left" style-hover="background:var(--color-neutral-300);color:var(--color-text)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+        <span>New course</span>
+      </button>
+    </div>
+    <div style="padding:12px 16px;border-top:2px solid var(--color-divider);font-size:12px;line-height:1.5;color:var(--color-neutral-700)">Type / for blocks. Drag on an image to mark a region.</div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header style="height:48px;flex:none;display:flex;align-items:center;gap:6px;padding:0 24px;border-bottom:2px solid var(--color-divider);font-size:13px;min-width:0">
+      <sc-for list="{{ crumbs }}" as="c" hint-placeholder-count="2">
+        <sc-if value="{{ c.sep }}"><span style="color:var(--color-neutral-500)">/</span></sc-if>
+        <button onClick="{{ c.click }}" style="border:0;background:transparent;padding:4px 6px;font-size:13px;cursor:pointer;color:var(--color-text);font-weight:{{ c.fw }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px" style-hover="background:var(--color-neutral-300)">{{ c.label }}</button>
+      </sc-for>
+    </header>
+
+    <div ref="{{ scrollRef }}" style="flex:1;overflow:auto;position:relative">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1080px;padding:48px 56px 80px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Workspace</div>
+          <h1 style="font-size:42px;margin:0 0 6px">Courses</h1>
+          <p style="color:var(--color-neutral-700);margin:0">{{ homeMeta }}</p>
+          <div style="margin-top:32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));border-top:2px solid var(--color-text);border-left:2px solid var(--color-text)">
+            <sc-for list="{{ courseCards }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.click }}" style="text-align:left;border:0;border-right:2px solid var(--color-text);border-bottom:2px solid var(--color-text);background:var(--color-bg);padding:20px;min-height:184px;display:flex;flex-direction:column;gap:6px;cursor:pointer;font:inherit;color:inherit" style-hover="background:var(--color-accent-100)">
+                <span style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)">{{ c.code }}</span>
+                <span style="font-size:22px;font-weight:800;line-height:1.15;letter-spacing:-0.01em">{{ c.name }}</span>
+                <span style="margin-top:auto;font-size:13px;color:var(--color-neutral-700)">{{ c.meta }}</span>
+              </button>
+            </sc-for>
+            <button onClick="{{ addCourse }}" style="text-align:left;border:0;border-right:2px solid var(--color-text);border-bottom:2px solid var(--color-text);background:var(--color-surface);padding:20px;min-height:184px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;cursor:pointer;font:inherit;color:inherit" style-hover="background:var(--color-accent-100)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              <span style="font-size:16px;font-weight:800">New course</span>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCourse }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:960px;padding:48px 56px 80px">
+          <input value="{{ courseCode }}" onChange="{{ onCourseCode }}" placeholder="COURSE CODE" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0 0 10px;font:600 12px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);outline:none">
+          <input value="{{ courseName }}" onChange="{{ onCourseName }}" placeholder="Untitled course" style="display:block;width:100%;border:0;background:transparent;padding:0;font:800 42px/1.12 var(--font-heading);letter-spacing:-0.015em;color:var(--color-text);outline:none">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:40px;padding-bottom:10px;border-bottom:2px solid var(--color-text)">
+            <span style="font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Materials</span>
+            <button onClick="{{ addMaterialHere }}" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border:0;background:var(--color-accent);color:#fff;font-size:14px;font-weight:800;cursor:pointer;min-width:160px;text-align:left" style-hover="background:var(--color-accent-600)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              <span>New material</span>
+            </button>
+          </div>
+          <sc-for list="{{ materialRows }}" as="m" hint-placeholder-count="2">
+            <div onClick="{{ m.click }}" style="display:grid;grid-template-columns:56px minmax(0,1fr) auto 36px;gap:16px;align-items:center;padding:16px 0;border-bottom:2px solid var(--color-divider);cursor:pointer" style-hover="background:var(--color-accent-100)">
+              <span style="font-size:13px;font-weight:600;color:var(--color-accent-700);font-variant-numeric:tabular-nums;padding-left:4px">{{ m.n }}</span>
+              <span style="font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.title }}</span>
+              <span style="font-size:13px;color:var(--color-neutral-700);white-space:nowrap">{{ m.meta }}</span>
+              <button onClick="{{ m.del }}" title="Delete material" style="width:32px;height:32px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-neutral-700)" style-hover="color:var(--color-accent-700);background:var(--color-accent-200)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noMaterials }}"><p style="padding:24px 0;color:var(--color-neutral-700);margin:0">No materials yet. Add lecture notes, a chapter or a lab handout.</p></sc-if>
+          <button onClick="{{ delCourse }}" style="margin-top:48px;border:0;background:transparent;padding:6px 0;font-size:13px;color:var(--color-neutral-700);cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:var(--color-accent-700)">Delete course</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMaterial }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:48px;padding:0 40px 0 88px;max-width:1280px">
+          <div style="flex:1;min-width:0;max-width:900px;padding:44px 0 0">
+            <sc-if value="{{ linking }}">
+              <div style="position:sticky;top:12px;z-index:30;display:flex;align-items:center;gap:16px;padding:10px 14px;margin-bottom:16px;background:var(--color-text);color:var(--color-bg);font-size:14px;box-shadow:var(--shadow-md)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                <span style="flex:1">Select a passage anywhere on this page to link it to comment {{ linkingN }}.</span>
+                <button onClick="{{ stopLinking }}" style="border:0;background:var(--color-accent);color:#fff;padding:6px 14px;font-weight:800;font-size:13px;cursor:pointer;text-align:left" style-hover="background:var(--color-accent-600)">Done</button>
+              </div>
+            </sc-if>
+            <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">{{ matKicker }}</div>
+            <input value="{{ matTitle }}" onChange="{{ onMatTitle }}" placeholder="Untitled" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0 0 20px;font:800 42px/1.12 var(--font-heading);letter-spacing:-0.015em;color:var(--color-text);outline:none">
+
+            <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="6">
+              <div data-row="{{ b.id }}" onMouseEnter="{{ b.enter }}" onMouseLeave="{{ b.leave }}" onDragOver="{{ b.dragOver }}" onDrop="{{ b.drop }}" style="position:relative;margin-top:{{ b.mt }}px;opacity:{{ b.rowOp }}">
+                <sc-if value="{{ b.dropBefore }}"><div style="position:absolute;left:0;right:0;top:-4px;height:3px;background:var(--color-accent)"></div></sc-if>
+                <sc-if value="{{ b.dropAfter }}"><div style="position:absolute;left:0;right:0;bottom:-4px;height:3px;background:var(--color-accent)"></div></sc-if>
+                <div style="position:absolute;left:-56px;top:{{ b.gTop }}px;display:flex;gap:2px;opacity:{{ b.gOp }};transition:opacity .1s">
+                  <button onClick="{{ b.add }}" title="Add block below" style="width:24px;height:24px;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-neutral-700)" style-hover="background:var(--color-neutral-300);color:var(--color-text)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                  </button>
+                  <button draggable="true" onDragStart="{{ b.dragStart }}" onDragEnd="{{ b.dragEnd }}" onClick="{{ b.menu }}" title="Drag to move, click for options" style="width:24px;height:24px;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--color-neutral-700)" style-hover="background:var(--color-neutral-300);color:var(--color-text)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="9" cy="5" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="9" cy="19" r="1.6"></circle><circle cx="15" cy="5" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="15" cy="19" r="1.6"></circle></svg>
+                  </button>
+                </div>
+                <sc-if value="{{ b.menuOpen }}">
+                  <div style="position:absolute;left:-56px;top:{{ b.menuTop }}px;z-index:40;width:200px;background:var(--color-bg);border:2px solid var(--color-text);box-shadow:var(--shadow-md);padding:4px;display:flex;flex-direction:column">
+                    <button onClick="{{ b.duplicate }}" style="border:0;background:transparent;padding:8px 10px;font-size:14px;text-align:left;cursor:pointer;color:var(--color-text)" style-hover="background:var(--color-accent-100)">Duplicate</button>
+                    <button onClick="{{ b.remove }}" style="border:0;background:transparent;padding:8px 10px;font-size:14px;text-align:left;cursor:pointer;color:var(--color-accent-700)" style-hover="background:var(--color-accent-100)">Delete</button>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.isTextual }}">
+                  <div style="display:flex;gap:10px;align-items:flex-start;padding:{{ b.pad }};background:{{ b.bg }};border-left:{{ b.bl }};border-top:{{ b.bt }};font-size:{{ b.fs }}px;font-weight:{{ b.fw }};line-height:{{ b.lh }};letter-spacing:{{ b.ls }};color:{{ b.color }}">
+                    <sc-if value="{{ b.hasNum }}"><span style="flex:none;min-width:{{ b.numW }}px;color:var(--color-accent-700);font-variant-numeric:tabular-nums;user-select:none">{{ b.num }}</span></sc-if>
+                    <sc-if value="{{ b.isBullet }}"><span style="flex:none;width:6px;height:6px;background:var(--color-text);margin:{{ b.bulletTop }}px 4px 0"></span></sc-if>
+                    <sc-if value="{{ b.isTodo }}">
+                      <button onClick="{{ b.toggleCheck }}" style="flex:none;width:18px;height:18px;margin-top:{{ b.checkTop }}px;border:2px solid var(--color-text);background:{{ b.checkBg }};padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff">
+                        <sc-if value="{{ b.checked }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+                      </button>
+                    </sc-if>
+                    <div style="flex:1;min-width:0;position:relative;text-decoration:{{ b.deco }}">
+                      <sc-if value="{{ b.editing }}"><textarea data-editing="1" autoFocus="{{ true }}" rows="1" value="{{ b.text }}" onChange="{{ b.change }}" onKeyDown="{{ b.keyDown }}" onBlur="{{ b.blur }}" placeholder="{{ b.ph }}" style="display:block;width:100%;border:0;padding:0;margin:0;background:transparent;resize:none;outline:none;font:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;overflow:hidden;field-sizing:content"></textarea></sc-if>
+                      <sc-if value="{{ b.notEditing }}"><div data-bid="{{ b.id }}" onClick="{{ b.dispClick }}" onMouseUp="{{ b.dispUp }}" style="white-space:pre-wrap;word-break:break-word;min-height:{{ b.minH }}px;cursor:{{ b.cursor }}"><sc-for list="{{ b.segments }}" as="s"><span onMouseEnter="{{ s.enter }}" onMouseLeave="{{ s.leave }}" style="background:{{ s.bg }};border-bottom:{{ s.bb }};transition:background .12s">{{ s.text }}</span><sc-if value="{{ s.sup }}"><sup data-skip="1" style="user-select:none;font-size:10px;font-weight:800;color:var(--color-accent-700);margin-left:1px;padding:0 2px;background:{{ s.supBg }}">{{ s.n }}</sup></sc-if></sc-for><sc-if value="{{ b.showPh }}"><span data-skip="1" style="color:var(--color-neutral-500)">{{ b.ph }}</span></sc-if></div></sc-if>
+                      <sc-if value="{{ b.showSlash }}">
+                        <div style="position:absolute;left:0;top:100%;margin-top:6px;z-index:50;width:300px;max-height:340px;overflow:auto;background:var(--color-bg);border:2px solid var(--color-text);box-shadow:var(--shadow-lg);padding:4px;font-size:14px;font-weight:400;line-height:1.3;letter-spacing:normal;color:var(--color-text)">
+                          <div style="padding:6px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Blocks</div>
+                          <sc-for list="{{ b.slashItems }}" as="it">
+                            <div onMouseDown="{{ it.pick }}" onMouseEnter="{{ it.hover }}" style="display:flex;flex-direction:column;gap:2px;padding:8px 10px;cursor:pointer;background:{{ it.bg }}">
+                              <span style="font-weight:600">{{ it.label }}</span>
+                              <span style="font-size:12px;color:var(--color-neutral-700)">{{ it.hint }}</span>
+                            </div>
+                          </sc-for>
+                          <sc-if value="{{ b.slashEmpty }}"><div style="padding:8px 10px;color:var(--color-neutral-700)">No matching blocks</div></sc-if>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.isDivider }}"><div style="padding:12px 0"><div style="height:2px;background:var(--color-divider)"></div></div></sc-if>
+
+                <sc-if value="{{ b.isImage }}">
+                  <div style="border:2px solid var(--color-text);background:var(--color-bg)">
+                    <div style="display:flex;align-items:center;gap:12px;padding:8px 8px 8px 14px;border-bottom:2px solid var(--color-text);font-size:12px;flex-wrap:wrap">
+                      <span style="font-weight:800;letter-spacing:.08em;text-transform:uppercase">Annotated image</span>
+                      <span style="color:var(--color-neutral-700)">Drag on the image to mark a region</span>
+                      <button onClick="{{ b.im.upload }}" style="margin-left:auto;display:flex;align-items:center;gap:6px;padding:6px 10px;border:2px solid var(--color-text);background:transparent;font-size:12px;font-weight:800;cursor:pointer;color:var(--color-text)" style-hover="background:var(--color-accent-100)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+                        <span>{{ b.im.uploadLabel }}</span>
+                      </button>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap">
+                      <div style="flex:3 1 380px;min-width:0;padding:14px;background:var(--color-surface)">
+                        <div onMouseDown="{{ b.im.down }}" onDragOver="{{ b.im.fileOver }}" onDrop="{{ b.im.fileDrop }}" style="position:relative;user-select:none;cursor:crosshair;line-height:0">
+                          <sc-if value="{{ b.im.hasSrc }}"><img src="{{ b.im.src }}" draggable="false" alt="" style="width:100%;display:block;pointer-events:none"></sc-if>
+                          <sc-if value="{{ b.im.noSrc }}"><div style="aspect-ratio:4/3;background:repeating-linear-gradient(135deg,var(--color-neutral-200) 0 10px,var(--color-neutral-300) 10px 11px);display:flex;align-items:flex-end;padding:14px;line-height:1.4"><span style="font:12px ui-monospace,Menlo,monospace;color:var(--color-neutral-800);background:var(--color-bg);padding:4px 8px">diagram · drop an image here or use Upload</span></div></sc-if>
+                          <sc-for list="{{ b.im.boxes }}" as="x">
+                            <div onMouseDown="{{ x.down }}" onMouseEnter="{{ x.enter }}" onMouseLeave="{{ x.leave }}" onClick="{{ x.click }}" style="position:absolute;left:{{ x.l }}%;top:{{ x.t }}%;width:{{ x.w }}%;height:{{ x.h }}%;border:{{ x.bw }}px solid var(--color-accent);background:{{ x.bg }};opacity:{{ x.op }};box-shadow:0 0 0 1px rgba(255,255,255,.85);cursor:pointer;transition:background .12s,opacity .12s;box-sizing:border-box">
+                              <span style="position:absolute;left:0;top:0;background:var(--color-accent);color:#fff;font:800 11px/1 var(--font-body);padding:4px 6px">{{ x.n }}</span>
+                            </div>
+                          </sc-for>
+                          <sc-if value="{{ b.im.hasDraft }}"><div style="position:absolute;left:{{ b.im.dl }}%;top:{{ b.im.dt }}%;width:{{ b.im.dw }}%;height:{{ b.im.dh }}%;border:2px dashed var(--color-accent);background:color-mix(in srgb, var(--color-accent) 12%, transparent);box-sizing:border-box"></div></sc-if>
+                        </div>
+                      </div>
+                      <div style="flex:2 1 240px;min-width:0;border-left:2px solid var(--color-text);display:flex;flex-direction:column">
+                        <div style="padding:10px 14px;border-bottom:2px solid var(--color-divider);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">{{ b.im.countLabel }}</div>
+                        <sc-if value="{{ b.im.noComments }}"><div style="padding:14px;font-size:14px;line-height:1.5;color:var(--color-neutral-700)">Drag on the image to mark a region. Each region gets a numbered comment.</div></sc-if>
+                        <sc-for list="{{ b.im.comments }}" as="c">
+                          <div onMouseEnter="{{ c.enter }}" onMouseLeave="{{ c.leave }}" style="padding:12px 14px;border-bottom:2px solid var(--color-divider);background:{{ c.bg }};transition:background .12s">
+                            <div style="display:flex;gap:10px;align-items:flex-start">
+                              <span style="flex:none;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:{{ c.badgeBg }};color:{{ c.badgeFg }};border:2px solid var(--color-accent);box-sizing:border-box">{{ c.n }}</span>
+                              <div style="flex:1;min-width:0">
+                                <sc-if value="{{ c.editing }}"><textarea autoFocus="{{ true }}" rows="2" value="{{ c.text }}" onChange="{{ c.change }}" onBlur="{{ c.blur }}" onKeyDown="{{ c.keyDown }}" placeholder="Comment on this region…" style="display:block;width:100%;border:0;border-bottom:2px solid var(--color-accent);padding:2px 0;margin:0;background:transparent;resize:none;outline:none;font:400 14px/1.5 var(--font-body);color:var(--color-text);field-sizing:content;min-height:42px"></textarea></sc-if>
+                                <sc-if value="{{ c.notEditing }}"><div onClick="{{ c.edit }}" style="font-size:14px;line-height:1.5;cursor:text;white-space:pre-wrap;word-break:break-word;color:{{ c.tColor }}">{{ c.display }}</div></sc-if>
+                                <div style="display:flex;gap:10px;align-items:center;margin-top:8px;font-size:12px">
+                                  <button onClick="{{ c.link }}" style="display:flex;align-items:center;gap:5px;border:0;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer;background:{{ c.linkBg }};color:{{ c.linkFg }}" style-hover="outline:2px solid var(--color-accent)">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                                    <span>{{ c.linkLabel }}</span>
+                                  </button>
+                                  <span style="color:var(--color-neutral-700)">{{ c.linkMeta }}</span>
+                                  <button onClick="{{ c.del }}" title="Delete region" style="margin-left:auto;width:26px;height:26px;border:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-neutral-700)" style-hover="color:var(--color-accent-700);background:var(--color-accent-200)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <div onClick="{{ addEnd }}" style="min-height:160px;cursor:text"></div>
+          </div>
+
+          <sc-if value="{{ showIndex }}" hint-placeholder-val="{{ true }}">
+            <nav style="flex:0 0 210px;position:sticky;top:0;align-self:flex-start;padding:52px 0 40px">
+              <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding-bottom:8px;border-bottom:2px solid var(--color-text);margin-bottom:6px">Index</div>
+              <sc-for list="{{ toc }}" as="t" hint-placeholder-count="5">
+                <button onClick="{{ t.click }}" style="display:flex;gap:8px;width:100%;border:0;background:transparent;padding:5px 6px 5px {{ t.pad }}px;font-size:{{ t.fs }}px;font-weight:{{ t.fw }};line-height:1.35;text-align:left;cursor:pointer;color:var(--color-text)" style-hover="background:var(--color-neutral-300)">
+                  <sc-if value="{{ t.hasNum }}"><span style="flex:none;color:var(--color-accent-700);font-variant-numeric:tabular-nums">{{ t.num }}</span></sc-if>
+                  <span style="min-width:0">{{ t.label }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ tocEmpty }}"><p style="font-size:13px;color:var(--color-neutral-700);padding:6px 0">Add a Section (#) or Subsection (##) and it appears here.</p></sc-if>
+            </nav>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ qOpen }}">
+    <div onMouseDown="{{ closeSearch }}" style="position:fixed;inset:0;z-index:100;background:color-mix(in srgb, var(--color-text) 35%, transparent);display:flex;justify-content:center;align-items:flex-start;padding-top:12vh">
+      <div onMouseDown="{{ stop }}" style="width:min(620px,92vw);background:var(--color-bg);border:2px solid var(--color-text);box-shadow:var(--shadow-lg)">
+        <div style="display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:2px solid var(--color-text)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input autoFocus="{{ true }}" value="{{ q }}" onChange="{{ onQ }}" onKeyDown="{{ onQKey }}" placeholder="Search courses, materials, sections and comments" style="flex:1;border:0;background:transparent;padding:16px 0;font:400 17px var(--font-body);color:var(--color-text);outline:none">
+          <span style="font-size:11px;color:var(--color-neutral-700);border:1px solid var(--color-neutral-500);padding:1px 5px">esc</span>
+        </div>
+        <div style="max-height:420px;overflow:auto;padding:4px">
+          <sc-for list="{{ results }}" as="r">
+            <div onMouseDown="{{ r.pick }}" onMouseEnter="{{ r.hover }}" style="display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:baseline;padding:10px 12px;cursor:pointer;background:{{ r.bg }}">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)">{{ r.kind }}</span>
+              <div style="min-width:0">
+                <div style="font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.title }}</div>
+                <div style="font-size:12px;color:var(--color-neutral-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.path }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noResults }}"><div style="padding:14px 12px;font-size:14px;color:var(--color-neutral-700)">No results</div></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;numbering&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Material page&quot;},&quot;highlight&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;marker&quot;,&quot;underline&quot;],&quot;default&quot;:&quot;marker&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Material page&quot;},&quot;showIndex&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Material page&quot;}}">
+const uid = () => Math.random().toString(36).slice(2, 9);
+const KEY = 'study-ws-v1';
+const TYPES = {
+  text: { fs: 16, fw: 400, lh: 1.6, mt: 4 }, h1: { fs: 28, fw: 800, lh: 1.2, mt: 44 }, h2: { fs: 20, fw: 800, lh: 1.25, mt: 26 },
+  h3: { fs: 16, fw: 600, lh: 1.4, mt: 16 }, bullet: { fs: 16, fw: 400, lh: 1.6, mt: 2 }, todo: { fs: 16, fw: 400, lh: 1.6, mt: 4 },
+  quote: { fs: 18, fw: 400, lh: 1.55, mt: 12 }, callout: { fs: 15, fw: 400, lh: 1.55, mt: 14 }
+};
+const PH = { text: "Type '/' for blocks", h1: 'Section title', h2: 'Subsection title', h3: 'Heading', bullet: 'List item', todo: 'To-do', quote: 'Quote', callout: 'Callout' };
+const SLASH = [
+  { type: 'text', label: 'Text', hint: 'Plain paragraph' },
+  { type: 'h1', label: 'Section', hint: 'Heading 1, listed in the index · #' },
+  { type: 'h2', label: 'Subsection', hint: 'Heading 2, listed in the index · ##' },
+  { type: 'h3', label: 'Heading 3', hint: 'Small heading · ###' },
+  { type: 'bullet', label: 'Bulleted list', hint: '-' },
+  { type: 'todo', label: 'To-do', hint: '[]' },
+  { type: 'quote', label: 'Quote', hint: '>' },
+  { type: 'callout', label: 'Callout', hint: 'Boxed note' },
+  { type: 'divider', label: 'Divider', hint: '---' },
+  { type: 'image', label: 'Annotated image', hint: 'Upload, mark regions, comment' }
+];
+const SHORT = [['### ', 'h3'], ['## ', 'h2'], ['# ', 'h1'], ['- ', 'bullet'], ['* ', 'bullet'], ['[] ', 'todo'], ['> ', 'quote']];
+
+function seed() {
+  const T = (type, text, extra) => ({ id: uid(), type, text, ...(extra || {}) });
+  const atria = T('text', 'The right atrium receives deoxygenated blood from the superior and inferior venae cavae. The left atrium receives oxygenated blood returning from the lungs through the pulmonary veins.');
+  const vent = T('text', 'The right ventricle pumps blood to the lungs through the pulmonary trunk. The left ventricle has the thickest wall because it drives blood through the entire systemic circulation via the aorta.');
+  const L = (b, q) => { const s = b.text.indexOf(q); return { bid: b.id, start: s, end: s + q.length }; };
+  const img = { id: uid(), type: 'image', text: '', src: '', annotations: [
+    { id: uid(), x: 12, y: 18, w: 30, h: 26, comment: 'Right atrium. Thin-walled; the SVC enters from above and the IVC from below.', links: [L(atria, 'right atrium')] },
+    { id: uid(), x: 54, y: 12, w: 32, h: 24, comment: 'Left atrium. Four pulmonary veins drain into its posterior wall.', links: [L(atria, 'left atrium'), L(atria, 'pulmonary veins')] },
+    { id: uid(), x: 16, y: 50, w: 30, h: 34, comment: 'Right ventricle. Crescent-shaped in cross-section.', links: [L(vent, 'right ventricle')] },
+    { id: uid(), x: 50, y: 42, w: 36, h: 44, comment: 'Left ventricle. Wall roughly three times thicker than the right.', links: [L(vent, 'left ventricle'), L(vent, 'thickest wall')] }
+  ] };
+  const heart = [
+    T('h1', 'Overview'),
+    T('text', 'The heart is a four-chambered muscular pump. Two atria receive blood and two ventricles push it out, keeping the pulmonary and systemic circuits separate.'),
+    T('h2', 'Position in the thorax'),
+    T('text', 'It sits in the middle mediastinum between the lungs, with about two thirds of its mass left of the midline.'),
+    T('callout', 'Exam tip: be able to name every vessel that enters or leaves each chamber.'),
+    T('h1', 'Chambers'),
+    T('h2', 'Atria'), atria,
+    T('h2', 'Ventricles'), vent,
+    T('h2', 'Labelled diagram'), img,
+    T('h1', 'Conduction system'),
+    T('text', 'The sinoatrial node sets the rhythm. The impulse spreads across the atria, pauses at the atrioventricular node, then travels down the bundle of His into the Purkinje fibres.'),
+    T('bullet', 'SA node: pacemaker, 60–100 bpm'),
+    T('bullet', 'AV node: delays the impulse so the ventricles can fill'),
+    T('todo', 'Review the ECG waveform before the lab', { checked: false }),
+    T('todo', 'Redraw the diagram from memory', { checked: true })
+  ];
+  return [
+    { id: 'c1', name: 'Human Anatomy', code: 'ANAT 201', materials: [
+      { id: 'm1', title: 'Unit 3 · The Heart', blocks: heart },
+      { id: 'm2', title: 'Unit 4 · Blood vessels', blocks: [T('h1', 'Arteries'), T('text', 'Arteries carry blood away from the heart under high pressure.'), T('h1', 'Veins'), T('text', '')] }
+    ] },
+    { id: 'c2', name: 'Linear Algebra', code: 'MATH 221', materials: [
+      { id: 'm3', title: 'Eigenvalues and eigenvectors', blocks: [T('h1', 'Definition'), T('text', 'A nonzero vector v is an eigenvector of A if Av = λv for some scalar λ.'), T('h2', 'Characteristic polynomial'), T('text', 'Solve det(A − λI) = 0 to find the eigenvalues.')] }
+    ] },
+    { id: 'c3', name: 'Organic Chemistry', code: 'CHEM 230', materials: [] }
+  ];
+}
+
+function offsetIn(root, node, off) {
+  if (!node || node.nodeType !== 3) return null;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let n, t = 0;
+  while ((n = w.nextNode())) {
+    if (n.parentElement.closest('[data-skip]')) continue;
+    if (n === node) return t + off;
+    t += n.length;
+  }
+  return null;
+}
+const eachAnn = (m, fn) => m.blocks.forEach(b => (b.annotations || []).forEach(fn));
+const eachLink = (m, fn) => eachAnn(m, a => a.links.forEach(fn));
+const pruneLinks = m => eachAnn(m, a => { a.links = a.links.filter(l => l.end > l.start && m.blocks.some(b => b.id === l.bid)); });
+
+class Component extends DCLogic {
+  state = (() => {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    return {
+      courses: (s && s.courses) || seed(),
+      view: (s && s.view) || { kind: 'material', courseId: 'c1', materialId: 'm1' },
+      expanded: (s && s.expanded) || { c1: true },
+      editing: null, slashIdx: 0, hover: null, linking: null, editingComment: null, draft: null,
+      dragId: null, dropId: null, dropAfter: false, hoverBlock: null, blockMenu: null,
+      qOpen: false, q: '', qIdx: 0
+    };
+  })();
+  caret = null;
+
+  componentDidMount() {
+    this.onKey = e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.setState(s => ({ qOpen: !s.qOpen, q: '', qIdx: 0 })); }
+      else if (e.key === 'Escape' && this.state.qOpen) this.setState({ qOpen: false });
+      else if (e.key === 'Escape' && this.state.linking) this.setState({ linking: null });
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); }
+  componentDidUpdate(pp, ps) {
+    const ta = document.querySelector('textarea[data-editing]');
+    if (ta) {
+      ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px';
+      if (this.caret != null) { const c = Math.min(this.caret, ta.value.length); ta.focus(); ta.setSelectionRange(c, c); this.caret = null; }
+    }
+    if (this.pendingScroll) { const id = this.pendingScroll; this.pendingScroll = null; setTimeout(() => this.goTo(id), 30); }
+    if (ps.courses !== this.state.courses || ps.view !== this.state.view || ps.expanded !== this.state.expanded) {
+      clearTimeout(this.saveT);
+      this.saveT = setTimeout(() => {
+        const { courses, view, expanded } = this.state;
+        try { localStorage.setItem(KEY, JSON.stringify({ courses, view, expanded })); } catch (e) { console.warn('Could not save workspace (storage full?)', e); }
+      }, 400);
+    }
+  }
+
+  cur() {
+    const { view, courses } = this.state;
+    const c = courses.find(x => x.id === view.courseId);
+    const m = c && c.materials.find(x => x.id === view.materialId);
+    return { c, m };
+  }
+  updMat(fn, extra) {
+    this.setState(s => {
+      const { courseId, materialId } = s.view;
+      return { ...(extra || {}), courses: s.courses.map(c => c.id !== courseId ? c : { ...c, materials: c.materials.map(m => {
+        if (m.id !== materialId) return m;
+        const mm = { ...m, blocks: m.blocks.map(b => ({ ...b, annotations: b.annotations ? b.annotations.map(a => ({ ...a, links: a.links.map(l => ({ ...l })) })) : undefined })) };
+        fn(mm); return mm;
+      }) }) };
+    });
+  }
+  updCourse(cid, fn) { this.setState(s => ({ courses: s.courses.map(c => c.id !== cid ? c : fn({ ...c })) })); }
+  go(view, extra) {
+    this.setState(s => ({ view, editing: null, linking: null, editingComment: null, hover: null, blockMenu: null, expanded: view.courseId ? { ...s.expanded, [view.courseId]: true } : s.expanded, ...(extra || {}) }));
+    if (this.scrollEl) this.scrollEl.scrollTop = 0;
+  }
+  goTo(bid) {
+    const sc = this.scrollEl; const el = sc && sc.querySelector(`[data-row="${bid}"]`);
+    if (!el) return;
+    sc.scrollTo({ top: el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 32, behavior: 'smooth' });
+  }
+  setHover(id) { if (this.state.hover !== id) this.setState({ hover: id }); }
+
+  setText(bid, val) {
+    let conv = false;
+    this.updMat(m => {
+      const b = m.blocks.find(x => x.id === bid); if (!b) return;
+      const old = b.text;
+      if (b.type === 'text') for (const [p, t] of SHORT) if (val.startsWith(p) && !old.startsWith(p)) { b.type = t; val = val.slice(p.length); conv = true; break; }
+      if (b.type === 'text' && val === '---') { b.type = 'divider'; val = ''; m.blocks.splice(m.blocks.indexOf(b) + 1, 0, { id: uid(), type: 'text', text: '' }); }
+      let p = 0; while (p < old.length && p < val.length && old[p] === val[p]) p++;
+      let sfx = 0; while (sfx < old.length - p && sfx < val.length - p && old[old.length - 1 - sfx] === val[val.length - 1 - sfx]) sfx++;
+      const delta = val.length - old.length, oe = old.length - sfx;
+      const map = x => x <= p ? x : x >= oe ? x + delta : p;
+      eachLink(m, l => { if (l.bid === bid) { l.start = map(l.start); l.end = map(l.end); } });
+      pruneLinks(m);
+      b.text = val;
+    }, { slashIdx: 0 });
+    if (conv) this.caret = 0;
+  }
+  slashOpen(b) { return this.state.editing === b.id && TYPES[b.type] && /^\/[\w ]{0,20}$/.test(b.text); }
+  slashItems(b) { const q = b.text.slice(1).toLowerCase().trim(); return SLASH.filter(it => (it.label + ' ' + it.type).toLowerCase().includes(q)); }
+  applyType(bid, type) {
+    const nid = uid();
+    this.caret = 0;
+    if (type === 'divider' || type === 'image') {
+      this.updMat(mm => { const i = mm.blocks.findIndex(b => b.id === bid); const b = mm.blocks[i]; b.type = type; b.text = ''; if (type === 'image') { b.src = ''; b.annotations = []; } mm.blocks.splice(i + 1, 0, { id: nid, type: 'text', text: '' }); }, { editing: type === 'divider' ? nid : null, slashIdx: 0 });
+      return;
+    }
+    this.updMat(mm => { const b = mm.blocks.find(x => x.id === bid); b.type = type; b.text = ''; }, { slashIdx: 0, editing: bid });
+  }
+  onBlockKey(bid, e) {
+    const { m } = this.cur(); const i = m.blocks.findIndex(b => b.id === bid); const b = m.blocks[i]; const ta = e.target;
+    if (this.slashOpen(b)) {
+      const items = this.slashItems(b);
+      if (e.key === 'ArrowDown') { e.preventDefault(); this.setState(s => ({ slashIdx: (s.slashIdx + 1) % Math.max(1, items.length) })); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); this.setState(s => ({ slashIdx: (s.slashIdx - 1 + items.length) % Math.max(1, items.length) })); return; }
+      if (e.key === 'Enter') { e.preventDefault(); const it = items[this.state.slashIdx]; if (it) this.applyType(bid, it.type); return; }
+      if (e.key === 'Escape') { e.preventDefault(); this.setText(bid, ''); return; }
+    }
+    if (e.key === 'Escape') { ta.blur(); return; }
+    const textual = j => m.blocks[j] && TYPES[m.blocks[j].type];
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const pos = ta.selectionStart;
+      if ((b.type === 'bullet' || b.type === 'todo') && b.text === '') { this.updMat(mm => { mm.blocks[i].type = 'text'; }); return; }
+      const nid = uid(); const ntype = (b.type === 'bullet' || b.type === 'todo') ? b.type : 'text';
+      this.caret = 0;
+      this.updMat(mm => {
+        const cb = mm.blocks[i]; const tail = cb.text.slice(pos); cb.text = cb.text.slice(0, pos);
+        mm.blocks.splice(i + 1, 0, { id: nid, type: ntype, text: tail, checked: false });
+        eachLink(mm, l => { if (l.bid !== bid) return; if (l.start >= pos) { l.bid = nid; l.start -= pos; l.end -= pos; } else if (l.end > pos) l.end = pos; });
+      }, { editing: nid });
+      return;
+    }
+    if (e.key === 'Backspace' && ta.selectionStart === 0 && ta.selectionEnd === 0) {
+      if (b.type !== 'text') { e.preventDefault(); this.updMat(mm => { mm.blocks[i].type = 'text'; }); return; }
+      const prev = m.blocks[i - 1];
+      if (prev && TYPES[prev.type]) {
+        e.preventDefault(); const pl = prev.text.length; this.caret = pl;
+        this.updMat(mm => { mm.blocks[i - 1].text += mm.blocks[i].text; eachLink(mm, l => { if (l.bid === bid) { l.bid = prev.id; l.start += pl; l.end += pl; } }); mm.blocks.splice(i, 1); }, { editing: prev.id });
+        return;
+      }
+      if (b.text === '' && m.blocks.length > 1) { e.preventDefault(); this.updMat(mm => { mm.blocks.splice(i, 1); }, { editing: null }); return; }
+    }
+    if (e.key === 'ArrowUp' && ta.selectionStart === 0) { for (let j = i - 1; j >= 0; j--) if (textual(j)) { e.preventDefault(); this.caret = m.blocks[j].text.length; this.setState({ editing: m.blocks[j].id }); return; } }
+    if (e.key === 'ArrowDown' && ta.selectionStart === ta.value.length) { for (let j = i + 1; j < m.blocks.length; j++) if (textual(j)) { e.preventDefault(); this.caret = 0; this.setState({ editing: m.blocks[j].id }); return; } }
+  }
+  dispClick(bid, e) {
+    if (this.state.linking) return;
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return;
+    const root = e.currentTarget;
+    let pos = null;
+    if (sel && sel.anchorNode && root.contains(sel.anchorNode)) pos = offsetIn(root, sel.anchorNode, sel.anchorOffset);
+    const { m } = this.cur(); const b = m.blocks.find(x => x.id === bid);
+    this.caret = pos != null ? pos : b.text.length;
+    this.setState({ editing: bid, blockMenu: null });
+  }
+  dispUp(bid, e) {
+    const ann = this.state.linking; if (!ann) return;
+    const sel = window.getSelection(); if (!sel || sel.isCollapsed) return;
+    const root = e.currentTarget; const r = sel.getRangeAt(0);
+    if (!root.contains(r.startContainer) || !root.contains(r.endContainer)) return;
+    const a = offsetIn(root, r.startContainer, r.startOffset), z = offsetIn(root, r.endContainer, r.endOffset);
+    if (a == null || z == null || z <= a) return;
+    sel.removeAllRanges();
+    this.updMat(mm => eachAnn(mm, x => { if (x.id === ann) x.links.push({ bid, start: a, end: z }); }), { hover: ann });
+  }
+  readFile(bid, file) {
+    if (!file || !/^image\//.test(file.type)) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const k = Math.min(1, 1600 / Math.max(im.width, im.height));
+        let url = fr.result;
+        if (k < 1 || file.size > 600000) {
+          const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+          const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(im, 0, 0, c.width, c.height);
+          url = c.toDataURL('image/jpeg', 0.86);
+        }
+        this.updMat(mm => { const b = mm.blocks.find(x => x.id === bid); if (b) b.src = url; });
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+  imgDown(bid, e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const r = e.currentTarget.getBoundingClientRect();
+    const P = ev => ({ x: Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100)), y: Math.max(0, Math.min(100, (ev.clientY - r.top) / r.height * 100)) });
+    const p = P(e);
+    this.setState({ draft: { bid, x0: p.x, y0: p.y, x1: p.x, y1: p.y }, editing: null, editingComment: null });
+    const mv = ev => { const q = P(ev); this.setState(s => ({ draft: s.draft && { ...s.draft, x1: q.x, y1: q.y } })); };
+    const up = () => {
+      window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up);
+      const d = this.state.draft; if (!d) return;
+      const x = Math.min(d.x0, d.x1), y = Math.min(d.y0, d.y1), w = Math.abs(d.x1 - d.x0), h = Math.abs(d.y1 - d.y0);
+      if (w < 2 || h < 2) { this.setState({ draft: null }); return; }
+      const id = uid();
+      this.updMat(mm => { mm.blocks.find(bb => bb.id === bid).annotations.push({ id, x, y, w, h, comment: '', links: [] }); }, { draft: null, editingComment: id, hover: id });
+    };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
+  updAnn(aid, fn, extra) { this.updMat(mm => eachAnn(mm, a => { if (a.id === aid) fn(a); }), extra); }
+
+  addMaterial(cid) {
+    const id = uid();
+    this.updCourse(cid, c => { c.materials = [...c.materials, { id, title: 'Untitled material', blocks: [{ id: uid(), type: 'h1', text: 'Introduction' }, { id: uid(), type: 'text', text: '' }] }]; return c; });
+    this.go({ kind: 'material', courseId: cid, materialId: id });
+  }
+  addCourse() {
+    const id = uid();
+    this.setState(s => ({ courses: [...s.courses, { id, name: 'Untitled course', code: '', materials: [] }] }));
+    this.go({ kind: 'course', courseId: id });
+  }
+
+  search() {
+    const q = this.state.q.trim().toLowerCase();
+    const out = [];
+    const hit = s => !q || (s || '').toLowerCase().includes(q);
+    this.state.courses.forEach(c => {
+      if (hit(c.name) || hit(c.code)) out.push({ kind: 'Course', title: c.name, path: c.code || '—', go: () => this.go({ kind: 'course', courseId: c.id }) });
+      c.materials.forEach(m => {
+        if (hit(m.title)) out.push({ kind: 'Material', title: m.title, path: c.name, go: () => this.go({ kind: 'material', courseId: c.id, materialId: m.id }) });
+        if (!q) return;
+        m.blocks.forEach(b => {
+          if ((b.type === 'h1' || b.type === 'h2') && hit(b.text)) out.push({ kind: b.type === 'h1' ? 'Section' : 'Subsection', title: b.text, path: `${c.name} / ${m.title}`, go: () => { this.pendingScroll = b.id; this.go({ kind: 'material', courseId: c.id, materialId: m.id }); } });
+          else if (TYPES[b.type] && b.type !== 'h1' && b.type !== 'h2' && hit(b.text)) out.push({ kind: 'Text', title: b.text, path: `${c.name} / ${m.title}`, go: () => { this.pendingScroll = b.id; this.go({ kind: 'material', courseId: c.id, materialId: m.id }); } });
+          (b.annotations || []).forEach((a, ai) => { if (hit(a.comment)) out.push({ kind: `Comment ${ai + 1}`, title: a.comment, path: `${c.name} / ${m.title}`, go: () => { this.pendingScroll = b.id; this.go({ kind: 'material', courseId: c.id, materialId: m.id }, { hover: a.id }); } }); });
+        });
+      });
+    });
+    return out.slice(0, 40);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const { courses, view, expanded, editing, hover, linking, editingComment, draft, dragId, dropId, dropAfter, hoverBlock, blockMenu } = st;
+    const numbering = this.props.numbering ?? true;
+    const marker = (this.props.highlight ?? 'marker') === 'marker';
+    const { c: course, m: mat } = this.cur();
+    const kind = view.kind === 'material' && !mat ? (course ? 'course' : 'home') : view.kind === 'course' && !course ? 'home' : view.kind;
+
+    const headNums = {};
+    if (mat) { let s = 0, ss = 0; mat.blocks.forEach(b => { if (b.type === 'h1') { s++; ss = 0; headNums[b.id] = `${s}`; } else if (b.type === 'h2') { ss++; headNums[b.id] = `${s}.${ss}`; } }); }
+
+    const navRows = [];
+    courses.forEach(c => {
+      const open = !!expanded[c.id];
+      const act = kind === 'course' && view.courseId === c.id;
+      navRows.push({ label: c.name || 'Untitled course', pad: 6, isCourse: true, open, closed: !open, fs: 14, fw: 600, bg: act ? 'var(--color-neutral-300)' : 'transparent', fg: 'var(--color-text)',
+        toggle: e => { e.stopPropagation(); this.setState(s => ({ expanded: { ...s.expanded, [c.id]: !s.expanded[c.id] } })); },
+        click: () => this.go({ kind: 'course', courseId: c.id }) });
+      if (!open) return;
+      c.materials.forEach(m => {
+        const a = kind === 'material' && view.materialId === m.id;
+        navRows.push({ label: m.title || 'Untitled', pad: 32, isMat: true, fs: 14, fw: a ? 600 : 400, bg: a ? 'var(--color-accent-200)' : 'transparent', fg: a ? 'var(--color-accent-800)' : 'var(--color-text)', click: () => this.go({ kind: 'material', courseId: c.id, materialId: m.id }) });
+        if (a) m.blocks.forEach(b => { if (b.type === 'h1' || b.type === 'h2') navRows.push({ label: b.text || 'Untitled', pad: b.type === 'h1' ? 54 : 68, hasNum: numbering, num: headNums[b.id], fs: 13, fw: 400, bg: 'transparent', fg: 'var(--color-neutral-800)', click: () => this.goTo(b.id) }); });
+      });
+      navRows.push({ label: 'Add material', pad: 32, isAdd: true, fs: 13, fw: 400, bg: 'transparent', fg: 'var(--color-neutral-700)', click: () => this.addMaterial(c.id) });
+    });
+
+    const crumbs = [{ label: 'Courses', click: () => this.go({ kind: 'home' }), fw: kind === 'home' ? 800 : 400 }];
+    if (kind !== 'home' && course) crumbs.push({ label: course.name || 'Untitled course', sep: true, fw: kind === 'course' ? 800 : 400, click: () => this.go({ kind: 'course', courseId: course.id }) });
+    if (kind === 'material' && mat) crumbs.push({ label: mat.title || 'Untitled', sep: true, fw: 800, click: () => this.scrollEl && this.scrollEl.scrollTo({ top: 0, behavior: 'smooth' }) });
+
+    const countSec = c => c.materials.reduce((n, m) => n + m.blocks.filter(b => b.type === 'h1').length, 0);
+    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+    let blocks = [], toc = [], linkingN = '';
+    if (kind === 'material' && mat) {
+      const annIndex = {};
+      mat.blocks.forEach(b => (b.annotations || []).forEach((a, ai) => { annIndex[a.id] = ai + 1; }));
+      if (linking) linkingN = annIndex[linking] || '';
+      const allLinks = [];
+      mat.blocks.forEach(b => (b.annotations || []).forEach(a => a.links.forEach(l => allLinks.push({ ...l, ann: a.id, n: annIndex[a.id] }))));
+
+      blocks = mat.blocks.map((b, bi) => {
+        const T = TYPES[b.type];
+        const isEditing = editing === b.id;
+        const o = {
+          id: b.id, isTextual: !!T, isDivider: b.type === 'divider', isImage: b.type === 'image',
+          mt: bi === 0 ? 0 : T ? T.mt : b.type === 'image' ? 18 : 6,
+          rowOp: dragId === b.id ? 0.4 : 1,
+          gOp: (hoverBlock === b.id || blockMenu === b.id) && !dragId ? 1 : 0,
+          dropBefore: dropId === b.id && !dropAfter && dragId && dragId !== b.id, dropAfter: dropId === b.id && dropAfter && dragId && dragId !== b.id,
+          menuOpen: blockMenu === b.id,
+          enter: () => { if (this.state.hoverBlock !== b.id) this.setState({ hoverBlock: b.id }); },
+          leave: () => { if (this.state.hoverBlock === b.id) this.setState({ hoverBlock: null }); },
+          add: e => { e.stopPropagation(); const nid = uid(); this.caret = 1; this.updMat(mm => { const i = mm.blocks.findIndex(x => x.id === b.id); mm.blocks.splice(i + 1, 0, { id: nid, type: 'text', text: '/' }); }, { editing: nid, slashIdx: 0, blockMenu: null }); },
+          menu: e => { e.stopPropagation(); this.setState(s => ({ blockMenu: s.blockMenu === b.id ? null : b.id, editing: null })); },
+          duplicate: e => { e.stopPropagation(); this.updMat(mm => { const i = mm.blocks.findIndex(x => x.id === b.id); const cp = JSON.parse(JSON.stringify(mm.blocks[i])); cp.id = uid(); (cp.annotations || []).forEach(a => { a.id = uid(); }); mm.blocks.splice(i + 1, 0, cp); }, { blockMenu: null }); },
+          remove: e => { e.stopPropagation(); this.updMat(mm => { mm.blocks = mm.blocks.filter(x => x.id !== b.id); if (!mm.blocks.length) mm.blocks.push({ id: uid(), type: 'text', text: '' }); pruneLinks(mm); }, { blockMenu: null, hover: null }); },
+          dragStart: e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', b.id); const row = e.currentTarget.closest('[data-row]'); if (row) e.dataTransfer.setDragImage(row, 20, 12); this.setState({ dragId: b.id, blockMenu: null, editing: null }); },
+          dragEnd: () => this.setState({ dragId: null, dropId: null }),
+          dragOver: e => { if (!this.state.dragId) return; e.preventDefault(); const r = e.currentTarget.getBoundingClientRect(); const after = e.clientY > r.top + r.height / 2; if (this.state.dropId !== b.id || this.state.dropAfter !== after) this.setState({ dropId: b.id, dropAfter: after }); },
+          drop: e => {
+            if (!this.state.dragId) return; e.preventDefault();
+            const { dragId: did, dropAfter: da } = this.state;
+            if (did !== b.id) this.updMat(mm => { const fi = mm.blocks.findIndex(x => x.id === did); const [mv] = mm.blocks.splice(fi, 1); let ti = mm.blocks.findIndex(x => x.id === b.id); if (da) ti++; mm.blocks.splice(ti, 0, mv); });
+            this.setState({ dragId: null, dropId: null });
+          }
+        };
+        if (T) {
+          let pad = '0', bg = 'transparent', bl = '0', bt = '0', ls = 'normal';
+          if (b.type === 'h1') { bt = '2px solid var(--color-text)'; pad = '14px 0 0'; ls = '-0.015em'; }
+          if (b.type === 'h2') ls = '-0.01em';
+          if (b.type === 'quote') { bl = '2px solid var(--color-text)'; pad = '2px 0 2px 16px'; }
+          if (b.type === 'callout') { bg = 'var(--color-surface)'; pad = '14px 16px'; }
+          const lineH = T.fs * T.lh, padTop = parseInt(pad) || 0;
+          const showSlash = this.slashOpen(b);
+          const items = showSlash ? this.slashItems(b) : [];
+          const segments = [];
+          if (!isEditing) {
+            const links = allLinks.filter(l => l.bid === b.id && l.end > l.start);
+            const len = b.text.length;
+            const pts = [...new Set([0, len, ...links.flatMap(l => [Math.min(l.start, len), Math.min(l.end, len)])])].sort((x, y) => x - y);
+            for (let k = 0; k < pts.length - 1; k++) {
+              const s = pts[k], e2 = pts[k + 1]; if (e2 <= s) continue;
+              const text = b.text.slice(s, e2);
+              const l = links.find(l => l.start <= s && l.end >= e2);
+              if (!l) { segments.push({ text, bg: 'transparent', bb: '0' }); continue; }
+              const act = hover === l.ann;
+              segments.push({
+                text, sup: l.end === e2, n: l.n,
+                bg: act ? 'var(--color-accent-300)' : marker ? 'var(--color-accent-100)' : 'transparent',
+                bb: act ? '2px solid var(--color-accent)' : '2px solid var(--color-accent-400)',
+                supBg: act ? 'var(--color-accent-300)' : 'transparent',
+                enter: () => this.setHover(l.ann), leave: () => this.setHover(null)
+              });
+            }
+          }
+          Object.assign(o, {
+            fs: T.fs, fw: T.fw, lh: T.lh, ls, pad, bg, bl, bt, text: b.text, segments,
+            editing: isEditing, notEditing: !isEditing, minH: lineH,
+            cursor: linking ? 'text' : 'text',
+            hasNum: numbering && !!headNums[b.id], num: headNums[b.id], numW: b.type === 'h1' ? 26 : 36,
+            isBullet: b.type === 'bullet', isTodo: b.type === 'todo', checked: !!b.checked,
+            checkBg: b.checked ? 'var(--color-accent)' : 'transparent',
+            color: b.type === 'todo' && b.checked ? 'var(--color-neutral-600)' : 'var(--color-text)',
+            deco: b.type === 'todo' && b.checked ? 'line-through' : 'none',
+            bulletTop: (lineH - 6) / 2, checkTop: (lineH - 18) / 2,
+            gTop: padTop + (lineH - 24) / 2, menuTop: padTop + (lineH - 24) / 2 + 28,
+            ph: isEditing ? (b.type === 'text' ? PH.text : PH[b.type]) : PH[b.type],
+            showPh: !isEditing && !b.text && b.type !== 'text',
+            toggleCheck: e => { e.stopPropagation(); this.updMat(mm => { const x = mm.blocks.find(y => y.id === b.id); x.checked = !x.checked; }); },
+            change: e => this.setText(b.id, e.target.value),
+            keyDown: e => this.onBlockKey(b.id, e),
+            blur: () => this.setState(s => s.editing === b.id ? { editing: null } : null),
+            dispClick: e => this.dispClick(b.id, e),
+            dispUp: e => this.dispUp(b.id, e),
+            showSlash, slashEmpty: showSlash && !items.length,
+            slashItems: items.map((it, k) => ({ ...it, bg: k === st.slashIdx ? 'var(--color-accent-100)' : 'transparent', pick: e => { e.preventDefault(); this.applyType(b.id, it.type); }, hover: () => this.setState({ slashIdx: k }) }))
+          });
+        } else {
+          o.gTop = b.type === 'divider' ? 1 : 6; o.menuTop = o.gTop + 28;
+        }
+        if (b.type === 'image') {
+          const anns = b.annotations || [];
+          const d = draft && draft.bid === b.id ? draft : null;
+          o.im = {
+            src: b.src, hasSrc: !!b.src, noSrc: !b.src, uploadLabel: b.src ? 'Replace image' : 'Upload image',
+            countLabel: anns.length ? plural(anns.length, 'region') : 'Regions',
+            noComments: !anns.length,
+            upload: e => { e.stopPropagation(); this.uploadBid = b.id; this.fileEl && this.fileEl.click(); },
+            down: e => this.imgDown(b.id, e),
+            fileOver: e => { if ([...e.dataTransfer.types].includes('Files')) e.preventDefault(); },
+            fileDrop: e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) { e.preventDefault(); e.stopPropagation(); this.readFile(b.id, f); } },
+            hasDraft: !!d, dl: d ? Math.min(d.x0, d.x1) : 0, dt: d ? Math.min(d.y0, d.y1) : 0, dw: d ? Math.abs(d.x1 - d.x0) : 0, dh: d ? Math.abs(d.y1 - d.y0) : 0,
+            boxes: anns.map((a, i) => { const act = hover === a.id; return {
+              n: i + 1, l: a.x, t: a.y, w: a.w, h: a.h, bw: act ? 3 : 2,
+              bg: act ? 'color-mix(in srgb, var(--color-accent) 22%, transparent)' : 'transparent',
+              op: hover && !act && annIndex[hover] ? 0.35 : 1,
+              down: e => e.stopPropagation(), enter: () => this.setHover(a.id), leave: () => this.setHover(null),
+              click: e => { e.stopPropagation(); this.setState({ editingComment: a.id, hover: a.id }); }
+            }; }),
+            comments: anns.map((a, i) => { const act = hover === a.id; const isL = linking === a.id; const ed = editingComment === a.id; return {
+              n: i + 1, text: a.comment, display: a.comment || 'Add a comment…', tColor: a.comment ? 'var(--color-text)' : 'var(--color-neutral-600)',
+              editing: ed, notEditing: !ed,
+              bg: act ? 'var(--color-accent-100)' : 'transparent',
+              badgeBg: act ? 'var(--color-accent)' : 'transparent', badgeFg: act ? '#fff' : 'var(--color-accent-700)',
+              linkLabel: isL ? 'Linking… done' : 'Link text',
+              linkBg: isL ? 'var(--color-accent)' : 'var(--color-neutral-200)', linkFg: isL ? '#fff' : 'var(--color-text)',
+              linkMeta: a.links.length ? plural(a.links.length, 'passage') : '',
+              enter: () => this.setHover(a.id), leave: () => this.setHover(null),
+              edit: () => this.setState({ editingComment: a.id }),
+              change: e => this.updAnn(a.id, x => { x.comment = e.target.value; }),
+              blur: () => this.setState(s => s.editingComment === a.id ? { editingComment: null } : null),
+              keyDown: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.target.blur(); } if (e.key === 'Escape') e.target.blur(); },
+              link: e => { e.stopPropagation(); this.setState(s => ({ linking: s.linking === a.id ? null : a.id, editing: null, hover: a.id })); },
+              del: e => { e.stopPropagation(); this.updMat(mm => { const bb = mm.blocks.find(x => x.id === b.id); bb.annotations = bb.annotations.filter(x => x.id !== a.id); }, { hover: null, linking: linking === a.id ? null : linking }); }
+            }; })
+          };
+        }
+        return o;
+      });
+      toc = mat.blocks.filter(b => b.type === 'h1' || b.type === 'h2').map(b => ({
+        label: b.text || 'Untitled', hasNum: numbering, num: headNums[b.id], pad: b.type === 'h1' ? 6 : 20,
+        fs: b.type === 'h1' ? 14 : 13, fw: b.type === 'h1' ? 600 : 400, click: () => this.goTo(b.id)
+      }));
+    }
+
+    const results = st.qOpen ? this.search() : [];
+
+    return {
+      fileRef: el => { this.fileEl = el; },
+      scrollRef: el => { this.scrollEl = el; },
+      onFile: e => { const f = e.target.files && e.target.files[0]; if (f && this.uploadBid) this.readFile(this.uploadBid, f); e.target.value = ''; },
+      closeMenus: () => { if (this.state.blockMenu) this.setState({ blockMenu: null }); },
+      navRows, crumbs,
+      homeBg: kind === 'home' ? 'var(--color-neutral-300)' : 'transparent',
+      goHome: () => this.go({ kind: 'home' }),
+      addCourse: () => this.addCourse(),
+      isHome: kind === 'home', isCourse: kind === 'course', isMaterial: kind === 'material',
+      homeMeta: `${plural(courses.length, 'course')} · ${plural(courses.reduce((n, c) => n + c.materials.length, 0), 'material')}`,
+      courseCards: courses.map(c => ({ code: c.code || 'No code', name: c.name || 'Untitled course', meta: `${plural(c.materials.length, 'material')} · ${plural(countSec(c), 'section')}`, click: () => this.go({ kind: 'course', courseId: c.id }) })),
+      courseName: course ? course.name : '', courseCode: course ? course.code : '',
+      onCourseName: e => { const v = e.target.value; this.updCourse(course.id, c => { c.name = v; return c; }); },
+      onCourseCode: e => { const v = e.target.value; this.updCourse(course.id, c => { c.code = v; return c; }); },
+      addMaterialHere: () => course && this.addMaterial(course.id),
+      delCourse: () => { if (course && confirm(`Delete “${course.name}” and all its materials?`)) { this.setState(s => ({ courses: s.courses.filter(c => c.id !== course.id) })); this.go({ kind: 'home' }); } },
+      noMaterials: !!course && !course.materials.length,
+      materialRows: course ? course.materials.map((m, i) => {
+        const secs = m.blocks.filter(b => b.type === 'h1').length, regs = m.blocks.reduce((n, b) => n + (b.annotations ? b.annotations.length : 0), 0);
+        return { n: String(i + 1).padStart(2, '0'), title: m.title || 'Untitled', meta: plural(secs, 'section') + (regs ? ` · ${plural(regs, 'region')}` : ''),
+          click: () => this.go({ kind: 'material', courseId: course.id, materialId: m.id }),
+          del: e => { e.stopPropagation(); if (confirm(`Delete “${m.title}”?`)) this.updCourse(course.id, c => { c.materials = c.materials.filter(x => x.id !== m.id); return c; }); } };
+      }) : [],
+      matTitle: mat ? mat.title : '', matKicker: course ? [course.code, course.name].filter(Boolean).join(' · ') : '',
+      onMatTitle: e => { const v = e.target.value; this.updMat(mm => { mm.title = v; }); },
+      blocks, toc, tocEmpty: !toc.length, showIndex: this.props.showIndex ?? true,
+      linking: !!linking, linkingN, stopLinking: () => this.setState({ linking: null }),
+      addEnd: () => {
+        const last = mat && mat.blocks[mat.blocks.length - 1];
+        if (last && last.type === 'text' && !last.text) { this.caret = 0; this.setState({ editing: last.id }); return; }
+        const nid = uid(); this.caret = 0; this.updMat(mm => { mm.blocks.push({ id: nid, type: 'text', text: '' }); }, { editing: nid });
+      },
+      qOpen: st.qOpen, q: st.q,
+      openSearch: () => this.setState({ qOpen: true, q: '', qIdx: 0 }),
+      closeSearch: () => this.setState({ qOpen: false }),
+      stop: e => e.stopPropagation(),
+      onQ: e => this.setState({ q: e.target.value, qIdx: 0 }),
+      onQKey: e => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); this.setState(s => ({ qIdx: Math.min(s.qIdx + 1, results.length - 1) })); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); this.setState(s => ({ qIdx: Math.max(s.qIdx - 1, 0) })); }
+        if (e.key === 'Enter' && results[st.qIdx]) { e.preventDefault(); this.setState({ qOpen: false }); results[st.qIdx].go(); }
+      },
+      results: results.map((r, i) => ({ ...r, bg: i === st.qIdx ? 'var(--color-accent-100)' : 'transparent', pick: e => { e.preventDefault(); this.setState({ qOpen: false }); r.go(); }, hover: () => this.setState({ qIdx: i }) })),
+      noResults: st.qOpen && !results.length
+    };
+  }
+}
+</script>
+</body>
+</html>

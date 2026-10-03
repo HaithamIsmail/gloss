@@ -1,0 +1,206 @@
+/* First-run guided tour: a dimmed screen, a red frame around one thing, a card beside it. */
+
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+}
+
+.tour-shade {
+  position: absolute;
+  inset: 0;
+}
+
+.tour.is-centered .tour-shade {
+  background: color-mix(in srgb, var(--color-text) 55%, transparent);
+  animation: tour-fade 0.2s ease both;
+}
+
+.tour.is-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.tour-spot {
+  position: fixed;
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--color-text) 55%, transparent);
+  pointer-events: none;
+  transition:
+    left 0.25s ease,
+    top 0.25s ease,
+    width 0.25s ease,
+    height 0.25s ease;
+}
+
+.tour-spot::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 2px solid var(--color-accent);
+  opacity: 0;
+  animation: tour-pulse 1.6s ease-out 0.3s 2;
+}
+
+.tour-pop {
+  position: fixed;
+  width: min(370px, calc(100vw - 24px));
+  padding: 14px 18px 14px;
+  background: var(--color-bg);
+  border: var(--rule-ink);
+  border-top: 6px solid var(--color-accent);
+  box-shadow: var(--shadow-lg);
+  animation: tour-in 0.22s ease both;
+}
+
+.tour.is-centered .tour-pop {
+  position: relative;
+}
+
+.tour-pop.is-intro {
+  width: min(460px, calc(100vw - 24px));
+  padding: 18px 26px 18px;
+}
+
+.tour-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.tour-count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-700);
+}
+
+.tour-close {
+  width: 26px;
+  height: 26px;
+  margin-right: -8px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-neutral-700);
+}
+
+.tour-close:hover {
+  background: var(--color-neutral-300);
+  color: var(--color-text);
+}
+
+.tour-icon {
+  margin: 4px 0 10px;
+}
+
+.tour-title {
+  margin: 0 0 6px;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.tour-pop.is-intro .tour-title {
+  font-size: 30px;
+}
+
+.tour-body {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.tour-body p {
+  margin: 0 0 8px;
+}
+
+.tour-body code {
+  font: 600 0.92em var(--font-mono);
+}
+
+.tour-body kbd {
+  font-size: 11px;
+  color: var(--color-text);
+  border-color: var(--color-neutral-600);
+  background: #fff;
+}
+
+.tour-progress {
+  height: 3px;
+  margin: 12px 0 12px;
+  background: var(--color-neutral-300);
+}
+
+.tour-progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.25s ease;
+}
+
+.tour-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-actions .btn-primary,
+.tour-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tour-skip {
+  border: 0;
+  background: transparent;
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tour-skip:hover {
+  color: var(--color-accent-700);
+}
+
+@keyframes tour-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes tour-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tour-pulse {
+  0% {
+    opacity: 0.9;
+    inset: -2px;
+  }
+  100% {
+    opacity: 0;
+    inset: -14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-spot,
+  .tour-pop,
+  .tour-spot::after,
+  .tour-progress span {
+    animation: none;
+    transition: none;
+  }
+}

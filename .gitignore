@@ -1,0 +1,16 @@
+# dependencies and builds
+node_modules
+dist
+
+# your notes, uploads, backups and notebook folders
+data
+
+# local tooling
+.claude
+*.log
+.DS_Store
+.env
+.env.*
+
+# the original design hand-off (extracted into design/)
+Study system with image annotations.zip
