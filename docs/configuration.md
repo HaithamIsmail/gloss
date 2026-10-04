@@ -46,6 +46,7 @@ find Python environments, and `ProgramFiles` to find LibreOffice.
 
 | Script | What it does |
 | --- | --- |
+| `npm run app` | The launcher (`scripts/start.mjs`, also `start.bat` / `start.sh`): install and build when needed, start, open the browser. Options: `--port`, `--no-open`, `--dev` |
 | `npm run dev` | API server (auto-restarts on server changes) + Vite dev server with hot reload, together |
 | `npm run dev:api` | Only the API server |
 | `npm run dev:web` | Only the Vite dev server |
@@ -56,7 +57,7 @@ find Python environments, and `ProgramFiles` to find LibreOffice.
 ## Development vs production
 
 **Development** (`npm run dev`): open http://localhost:5173. Vite forwards `/api` (including the notebook kernel
-WebSocket), `/uploads`, `/excalidraw-assets`, `/pyodide` and `/pdfjs` to the API server on `API_PORT`.
+WebSocket), `/uploads`, `/themes`, `/excalidraw-assets`, `/pyodide` and `/pdfjs` to the API server on `API_PORT`.
 
 **Production** (`npm run build`, then `npm start`): open http://localhost:3001 (or `PORT`). One server serves the app,
 the API, uploads, Excalidraw's fonts, the Pyodide runtime and pdf.js files. The server runs TypeScript directly with

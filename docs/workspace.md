@@ -47,7 +47,7 @@ From top to bottom:
   - hover a material for its trash icon (*Move to trash*), or a folder for **+** (*Add to folder*) and trash.
   - A course or folder opens by itself when you open something inside it, and remembers being folded.
 - **New course**.
-- At the bottom: **Trash**, **Backups and export** and **Guided tour**.
+- At the bottom: **Trash**, **Backups and export**, **Settings** (where [themes](themes.md) are) and **Guided tour**.
 
 Drag materials in the tree to organise them — see [Moving and organising](#moving-and-organising).
 
@@ -56,6 +56,8 @@ Drag materials in the tree to organise them — see [Moving and organising](#mov
 - **Sidebar button** (left) hides or shows the sidebar.
 - **Breadcrumbs**: *Courses / Course / Folder / Material*. Click a part to go there; clicking the material's own name
   scrolls back to the top.
+- On anything inside a folder, **‹ 3 / 12 ›**: the previous / next item of that folder (also `←` / `→` when you're
+  not typing, `Alt ←` / `Alt →` anywhere) — see [Moving between slides and pages](slides-and-pdfs.md#moving-between-slides-and-pages).
 - On a material or drawing, the **save status**: *Saving…*, *Saved*, or *Not saved — retrying on next edit*.
 - On a material: **View options** (sliders icon: section numbers, index, linked-passage style — see
   [View options](pages.md#view-options)) and **⋯ More actions**: Version history, Move to…, Export as Markdown, Print or

@@ -7,7 +7,7 @@ and all of them are kept together in a **folder**. Folders are also yours to mak
 - [Importing slides or a PDF](#importing-slides-or-a-pdf)
 - [How decks are converted](#how-decks-are-converted)
 - [What you get](#what-you-get)
-- [Moving between slides](#moving-between-slides)
+- [Moving between slides and pages](#moving-between-slides-and-pages)
 - [Folders](#folders)
 - [Troubleshooting imports](#troubleshooting-imports)
 
@@ -69,19 +69,21 @@ if you install LibreOffice later, restart Gloss.
     path *Course / Folder / Slide*).
 - The original file is kept: the folder page links to it (and, for decks, to the converted PDF).
 
-## Moving between slides
+## Moving between slides and pages
 
-![A slide with regions, and the previous/next controls](images/image-page-2.png)
+![A slide with regions; ‹ 5 / 6 › in the top bar moves between the folder's pages](images/image-page-2.png)
 
-On a page inside a folder, the toolbar shows **‹** *3/32* **›** and the label reads *Course · Folder · 3 of 32*.
+Anything inside a folder — slides, pages, notebooks — shows **‹** *3 / 32* **›** in the top bar, and slides are
+labelled *Course · Folder · 3 of 32*. The arrows step through everything in the folder, in its order.
 
 | Action | Keys |
 | --- | --- |
-| Previous slide | `Page Up` or `Alt ←` |
-| Next slide | `Page Down` or `Alt →` |
+| Previous | `←` or `Page Up` (when you're not typing), or `Alt ←` (also while typing) |
+| Next | `→` or `Page Down` (when you're not typing), or `Alt →` (also while typing) |
 
-The keys are ignored while you are typing in a field. Only the image pages of the folder count as slides; other
-materials in the folder are skipped.
+While you type in a page, a cell or a comment, the plain arrows move the cursor as usual. On a Mac, `Option ←/→` in a
+text field keeps moving by word; click outside the text and use `←` / `→`. The buttons are greyed out at the first
+and last item.
 
 ## Folders
 

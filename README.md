@@ -20,9 +20,10 @@ version history, backups and exports. It runs on your own computer; your notes s
   drag and drop.
 - **Block editor.** `/` menu, Markdown shortcuts, numbered Sections (1, 2…) and Subsections (1.1…), a live index,
   callouts, tables, toggles, code, colours.
-- **Annotated images.** Drag boxes on any image, comment each region, link passages of your notes to it. Hovering a
-  region, its comment or a linked passage highlights all three.
-- **Slides and PDFs.** Import a `.pdf` or `.pptx`: every slide becomes an annotated page, titled and searchable.
+- **Annotated images.** Drag boxes on any image, comment each region (Markdown and LaTeX), link passages of your notes
+  to it. Hovering a region, its comment or a linked passage highlights all three.
+- **Slides and PDFs.** Import a `.pdf` or `.pptx`: every slide becomes an annotated page, titled and searchable; step
+  through a folder with `←` / `→`.
 - **Notebooks.** Code and markdown cells with Python in the browser (nothing to install) or in your own venv/conda
   environment through a real Jupyter kernel. Import and export `.ipynb`.
 - **Formulas.** Type `$x^2$` or `$$` for LaTeX formulas in any page.
@@ -32,6 +33,8 @@ version history, backups and exports. It runs on your own computer; your notes s
 - **Search everything** with `Ctrl K` — titles, sections, text, region comments, slide text, code, drawings.
 - **Nothing gets lost.** Trash with Undo (30 days), version history, a database backup every time the app starts.
 - **Take it with you.** Export a course as Markdown or PDF, or everything as one zip.
+- **Themes**, like Typora's: Modernist, Washi 和紙, Shuimo 水墨, Pokémon and Midnight (dark) built in, or write your own
+  CSS file — colours, fonts, corners, textures — and see edits live.
 - **Guided tour** on first launch, with Skip; replay it from the sidebar.
 
 ## Screenshots
@@ -44,6 +47,8 @@ version history, backups and exports. It runs on your own computer; your notes s
 | **Notebooks** running Python in the browser or your own env | **Canvas** drawings you can place on any page |
 | ![Search results](docs/images/search.png) | ![Version history](docs/images/history.png) |
 | **Search** everything with `Ctrl K` | **Version history**, trash and backups |
+| ![The Washi theme](docs/images/theme-washi.png) | ![The Pokémon theme](docs/images/theme-pokemon.png) |
+| **Themes**: Washi 和紙… | …Pokémon, Shuimo, Midnight, or your own CSS |
 
 More in the [documentation](docs/README.md).
 
@@ -51,19 +56,17 @@ More in the [documentation](docs/README.md).
 
 Requires **Node.js 22.13+**.
 
+**Double-click `start.bat`** (Windows), or run `./start.sh` (macOS/Linux) or `npm run app`. The first start installs
+everything and builds the app; after that it starts in seconds and opens **http://localhost:3001** in your browser.
+Press `Ctrl C` (or close the window) to stop.
+
+A new installation starts with sample courses that show every feature, and a guided tour.
+
+For development with live reload:
+
 ```bash
 npm install
-npm run dev
-```
-
-Open **http://localhost:5173**. A new installation starts with sample courses that show every feature, and a guided
-tour.
-
-For a single-port production build:
-
-```bash
-npm run build
-npm start          # http://localhost:3001
+npm run dev        # http://localhost:5173
 ```
 
 ## Documentation
@@ -73,7 +76,7 @@ The full guide is in [`docs/`](docs/README.md):
 - [Getting started](docs/getting-started.md) · [The workspace](docs/workspace.md) · [Pages](docs/pages.md) ·
   [Annotated images](docs/annotated-images.md) · [Slides, PDFs and folders](docs/slides-and-pdfs.md) ·
   [Notebooks](docs/notebooks.md) · [Canvas](docs/canvas.md)
-- [Trash and version history](docs/trash-and-history.md) · [Backups and export](docs/backups-and-export.md) ·
+- [Trash and version history](docs/trash-and-history.md) · [Themes](docs/themes.md) · [Backups and export](docs/backups-and-export.md) ·
   [Keyboard shortcuts](docs/keyboard-shortcuts.md) · [Troubleshooting and FAQ](docs/troubleshooting.md)
 - [Configuration](docs/configuration.md) · [Architecture](docs/architecture.md) · [HTTP API](docs/api.md)
 

@@ -47,6 +47,7 @@ server/
   convert.ts        Slide deck → PDF with PowerPoint or LibreOffice
   pptx_to_pdf.ps1   PowerPoint automation script
   security.ts       Local-only Host/Origin checks
+  themes.ts         Theme files: listing, choosing, creating, duplicating, removing
 shared/
   api.ts            Types shared by client and server
   content.ts        Reading BlockNote documents: outline, regions, mentions, text
@@ -64,9 +65,11 @@ src/
   slides/           PDF/slide import (pdf.js rendering, progress dialog)
   print/            Read-only rendering for print/PDF and version previews
   tour/             First-run guided tour
+  theme/            Applying the chosen theme (adopted stylesheet, first-paint cache)
   components/       Sidebar, top bar, search, index, dialogs, toasts…
   pages/            Home, course, canvas, trash, backups, print, material views
   styles/           Design tokens and styles
+themes/             Built-in themes (CSS, with their fonts) and the theme template
 docs/               This documentation
 design/             The original design prototype and design system
 public/             Logo and icons
@@ -99,7 +102,7 @@ SQLite tables (`server/db.ts`):
 | `trash` | one row per delete: kind, item id, title, location, count of contained items, time |
 | `material_versions` | earlier contents of a material |
 | `links` | `@` links: source material → target material (and region) |
-| `settings` | key/value JSON (added Python interpreters, backup fingerprint) |
+| `settings` | key/value JSON (added Python interpreters, backup fingerprint, chosen theme) |
 
 - **Soft delete:** deleting sets `deleted_at` and a shared `trash_id` on everything removed together (a course and its
   materials, a folder and its pages). All normal queries skip deleted rows. Restore clears them; purge deletes rows.
@@ -137,6 +140,12 @@ SQLite tables (`server/db.ts`):
   page over a WebSocket; one kernel per notebook, kept 15 minutes after the last client leaves.
 - **Slides.** Decks are converted to PDF on the server; the browser renders each PDF page with pdf.js to a JPEG,
   uploads it, extracts its text and title, and the server creates the folder in one transaction.
+- **Themes.** All colours, fonts, radii and rule weights are CSS variables in `src/styles/tokens.css`;
+  `theme-hooks.css` says where the type and shape variables apply. A theme file overrides them (and may add rules).
+  The chosen theme's CSS is fetched, its relative `url()`s made absolute, and put in `document.adoptedStyleSheets`,
+  which cascade after every page stylesheet — so it wins even over CSS that lazy pages load later. A copy is cached
+  in `localStorage` and applied by an inline script in `index.html` before the first paint. Theme previews in Settings
+  are `srcdoc` iframes that load the real theme file over a small mock of the app.
 - **Guided tour.** `src/tour/steps.tsx` lists steps (target selector, page to open, text); `Tour.tsx` dims the screen
   with a spotlight, places the card beside the target, and remembers completion in `localStorage` (`gloss-tour`).
 

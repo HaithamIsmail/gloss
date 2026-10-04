@@ -2,7 +2,8 @@
 
 - [Requirements](#requirements)
 - [Install and run](#install-and-run)
-- [Run it as an app (production)](#run-it-as-an-app-production)
+- [Development mode](#development-mode)
+- [Run it without the launcher](#run-it-without-the-launcher)
 - [First launch and the guided tour](#first-launch-and-the-guided-tour)
 - [The sample courses](#the-sample-courses)
 - [Your first course in five minutes](#your-first-course-in-five-minutes)
@@ -23,21 +24,57 @@
 
 ## Install and run
 
+Get the code:
+
 ```bash
-git clone <your repository URL> gloss
+git clone https://github.com/HaithamIsmail/gloss.git
 cd gloss
+```
+
+Then start it with the launcher:
+
+| System | How |
+| --- | --- |
+| Windows | Double-click **`start.bat`** (or run it from a terminal) |
+| macOS / Linux | `./start.sh` |
+| Anywhere | `npm run app` |
+
+The launcher:
+
+1. checks that Node.js is 22.13 or newer;
+2. installs the dependencies on the first run, and again after an update changed them;
+3. builds the web app when its code changed since the last build (the first start takes a minute or two; later starts
+   take seconds);
+4. starts Gloss on **http://localhost:3001** and opens it in your browser once it's ready.
+
+If Gloss is already running, the launcher just opens it in the browser. Stop Gloss with `Ctrl C` in its window (or by
+closing the window).
+
+Launcher options (after `start.bat`, `./start.sh` or `npm run app --`):
+
+| Option | Effect |
+| --- | --- |
+| `--port 8080` | Use another port |
+| `--no-open` | Don't open the browser |
+| `--dev` | Run the development servers instead (see below) |
+
+Tip: on Windows, right-click `start.bat` → *Send to* → *Desktop (create shortcut)* to start Gloss from your desktop.
+
+## Development mode
+
+```bash
 npm install
 npm run dev
 ```
 
-Open **http://localhost:5173**.
+Open **http://localhost:5173**. `npm run dev` starts two things side by side: the API server on port 3001 (restarts
+when server code changes) and the Vite web server on port 5173 (reloads the page when client code changes). Stop both
+with `Ctrl C`.
 
-`npm run dev` starts two things side by side: the API server on port 3001 (restarts when server code changes) and the
-Vite web server on port 5173 (reloads the page when client code changes). Stop both with `Ctrl C`.
-
-## Run it as an app (production)
+## Run it without the launcher
 
 ```bash
+npm install
 npm run build
 npm start
 ```
@@ -50,7 +87,7 @@ settings.
 
 ![The guided tour's welcome card](images/tour-welcome.png)
 
-The first time you open Gloss in a browser, a **guided tour** walks you through the app in about 17 short steps:
+The first time you open Gloss in a browser, a **guided tour** walks you through the app in about 18 short steps:
 
 1. **Welcome** — choose **Show me around**, or **Skip, I'll explore**.
 2. Each step dims the screen, outlines one part of the app in red and explains it next to it. It opens the pages it
@@ -62,7 +99,7 @@ The first time you open Gloss in a browser, a **guided tour** walks you through 
 
 The tour covers: the course tree, search, adding materials, organising and exporting a course, writing with blocks,
 the index, annotated images, formulas and `@` links, the page and view menus, notebooks and kernels, image pages,
-the Canvas, the Trash and backups. Steps about things your workspace doesn't have yet (e.g. no notebook) are left
+the Canvas, the Trash and backups, and themes. Steps about things your workspace doesn't have yet (e.g. no notebook) are left
 out.
 
 Once finished or skipped, the tour doesn't come back by itself (your browser remembers it). Replay it any time with
@@ -109,17 +146,21 @@ Everything is in the `data/` folder of the project:
 | `data/uploads/` | Images, PDFs and files you added |
 | `data/backups/` | Automatic database backups (the latest 20) |
 | `data/notebooks/<id>/` | Working folders of local notebook kernels |
+| `data/themes/` | Your own [themes](themes.md) |
 
 Gloss backs up the database every time it starts — see [Backups and export](backups-and-export.md). The `data/` folder
 is not part of the Git repository (it's in `.gitignore`), so your notes stay on your machine.
 
 ## Updating
 
+Stop Gloss, then:
+
 ```bash
 git pull
-npm install
-npm run dev     # or: npm run build && npm start
 ```
+
+and start it again with the launcher: it installs new dependencies and rebuilds the app by itself. (Without the
+launcher: `npm install`, then `npm run build && npm start`.)
 
 Your `data/` folder is untouched by updates. Gloss upgrades the database by itself when it starts (adding new tables or
 columns), and backs it up first if anything changed since the last backup.

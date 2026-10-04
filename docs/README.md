@@ -18,6 +18,7 @@ Everything Gloss can do, chapter by chapter.
 | [Notebooks](notebooks.md) | Cells, running code, shortcuts, outputs, browser Python, your own environments, `.ipynb` |
 | [Canvas](canvas.md) | Drawings with Excalidraw, adding them to pages, drawing from a page |
 | [Trash and version history](trash-and-history.md) | Undo, restoring, deleting for good, earlier versions |
+| [Themes](themes.md) | Choosing a theme, the built-in themes, making your own (CSS variables, fonts, custom rules) |
 | [Backups and export](backups-and-export.md) | Automatic backups, restoring, Markdown and PDF export, exporting everything |
 | [Keyboard shortcuts](keyboard-shortcuts.md) | Every shortcut in one place |
 | [Troubleshooting and FAQ](troubleshooting.md) | Common problems, questions, known limits |
@@ -43,9 +44,10 @@ A quick map from feature to chapter.
 - **Math:** `$…$` inline formulas, `$$` formula blocks, Σ toolbar button (KaTeX) — [pages](pages.md#formulas-latex)
 - **Link:** `@` links to materials, slides and individual image regions · *Linked from* backlinks —
   [pages](pages.md#links-to-other-materials-)
-- **Annotate:** draw, move, resize regions · numbered comments · link passages · three-way hover highlight · preview
+- **Annotate:** draw, move, resize regions · numbered comments in Markdown with LaTeX · link passages · three-way hover highlight · preview
   of off-screen regions · full-page image view with zoom, undo and split — [annotated images](annotated-images.md)
-- **Import:** PDFs and PowerPoint/OpenDocument decks become folders of annotated slides, titled and searchable ·
+- **Import:** PDFs and PowerPoint/OpenDocument decks become folders of annotated slides, titled and searchable,
+  stepped through with `←` / `→` ·
   `.ipynb` notebooks — [slides](slides-and-pdfs.md), [notebooks](notebooks.md)
 - **Compute:** Jupyter-style notebooks · Python in the browser (Pyodide) · your own venv/conda/pyenv environments via
   ipykernel · rich outputs · `input()` · interrupt — [notebooks](notebooks.md)
@@ -54,6 +56,8 @@ A quick map from feature to chapter.
   start · Back up now — [trash and history](trash-and-history.md), [backups](backups-and-export.md)
 - **Take it with you:** Markdown zip of a course or material · print / save as PDF · export everything —
   [backups and export](backups-and-export.md)
+- **Make it yours:** themes like Typora's — Modernist, Washi, Shuimo, Pokémon, Midnight (dark), or your own CSS file
+  with live reload — [themes](themes.md)
 - **Learn it:** first-run guided tour with Skip, replayable from the sidebar —
   [getting started](getting-started.md#first-launch-and-the-guided-tour)
 - **Run it your way:** local-only by default · configurable data folder and ports — [configuration](configuration.md)

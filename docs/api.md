@@ -13,6 +13,7 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 - [Backups and export](#backups-and-export)
 - [Search](#search)
 - [Uploads and slide import](#uploads-and-slide-import)
+- [Themes](#themes)
 - [Python environments and kernels](#python-environments-and-kernels)
 - [Static files](#static-files)
 
@@ -99,6 +100,17 @@ course takes its pages. Changing `content` may store the previous content as a v
 | `POST /api/convert/slides` | multipart `file` (.pptx .ppt .pptm .ppsx .pps .odp) | `{ url, name, pdfUrl, converter }` · `400` · `501` (no converter) · `500` |
 | `POST /api/courses/:id/slides` | `{ title, source: { name, url, pdfUrl, type }, pages: [{ title, url, name, text? }] }` | `201` folder Material |
 
+## Themes
+
+| Method & path | Body | Response |
+| --- | --- | --- |
+| `GET /api/themes` | — | `{ current, folder, themes: [{ id, name, author, description, scheme, source, href, updatedAt }] }` |
+| `PUT /api/themes/current` | `{ id }` (e.g. `"builtin/washi"`) | the list, with the new `current` · `404` |
+| `POST /api/themes` | `{}` (from the template) or `{ css, fileName?, name? }` | `201` ThemeInfo (saved in `data/themes/`) |
+| `POST /api/themes/duplicate` | `{ id }` | `201` ThemeInfo (a copy in `data/themes/`, with its asset folder) |
+| `DELETE /api/themes?id=user/…` | — | the list (the file moves to `data/themes/.removed/`) · `400` for built-in themes |
+| `POST /api/themes/open-folder` | — | `204` (opens `data/themes/` in the file manager) |
+
 ## Python environments and kernels
 
 | Method & path | Body | Response |
@@ -116,6 +128,7 @@ WebSocket messages — client → server: `{ type: "execute", id, code }`, `{ ty
 | Path | Serves |
 | --- | --- |
 | `/uploads/*` | `data/uploads` |
+| `/themes/builtin/*`, `/themes/user/*` | the app's `themes/` folder, `data/themes` |
 | `/excalidraw-assets/fonts/*` | Excalidraw's fonts |
 | `/pyodide/*` | the Pyodide runtime |
 | `/pdfjs/{cmaps,standard_fonts,wasm,iccs}/*` | pdf.js data |

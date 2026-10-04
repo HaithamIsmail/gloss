@@ -8,6 +8,8 @@ On a Mac, use `⌘` where this page says `Ctrl`.
 | --- | --- |
 | `Ctrl K` | Open or close search (except inside a drawing, or with text selected in a page, where it makes a link) |
 | `Esc` | Close a dialog or menu; stop linking text to a region |
+| `←` / `→`, `Page Up` / `Page Down` (not typing) | Previous / next page in the same folder |
+| `Alt ←` / `Alt →` (also while typing) | Previous / next page in the same folder |
 
 **In search:** `↑` `↓` choose · `Enter` open · `Esc` close.
 
@@ -47,8 +49,6 @@ On a Mac, use `⌘` where this page says `Ctrl`.
 | --- | --- |
 | `Ctrl Z` / `Ctrl Shift Z` or `Ctrl Y` | Undo / redo region changes |
 | `+` (or `=`) / `-` / `0` | Zoom in / out / fit |
-| `Page Down` or `Alt →` | Next slide (in a folder) |
-| `Page Up` or `Alt ←` | Previous slide (in a folder) |
 | `Ctrl V` | Paste an image |
 
 ## Notebooks

@@ -49,6 +49,7 @@ so the database backups plus that folder are a complete copy.
 - `study.db` — a fresh snapshot of the database,
 - `uploads/` — every image, PDF and file you added,
 - `notebooks/` — the working folders of your local notebook kernels,
+- `themes/` — your own themes,
 - anything else in `data/` except the backups folder.
 
 To move Gloss to another computer: install it there, unzip, and put the `data/` folder next to the app (replacing the

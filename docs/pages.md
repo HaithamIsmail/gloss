@@ -213,7 +213,8 @@ The **sliders** icon in the top bar (*Page view options*):
 | **Linked passages: Marker** | Text linked to image regions is tinted and underlined. |
 | **Linked passages: Underline only** | Linked text is only underlined until you hover it. |
 
-These choices are remembered by your browser and apply to every page.
+These choices are remembered by your browser and apply to every page. To change the app's colours and fonts, see
+[Themes](themes.md).
 
 ## The page menu (⋯)
 

@@ -49,10 +49,16 @@ A click on an empty part of the image (without dragging) just closes the open co
 
 ## Comments
 
+![Comments with Markdown and formulas next to a slide](images/image-page.png)
+
 The comment list (headed *4 regions*) shows each region's **number**, its comment (*Add a comment…* if empty),
 **Link text**, how many **passages** link to it, and the delete icon.
 
 - Click a comment to edit it. **Enter** saves, **Shift Enter** adds a new line, **Esc** or clicking away also saves.
+- Comments are **Markdown with LaTeX**: `**bold**`, `*italic*`, lists (`- item`), `` `code` ``, links
+  (`[text](https://…)`, opened in a new tab), `$x^2$` for a formula in the line and `$$…$$` for a centred one. They are
+  shown formatted; clicking the text opens the source for editing (clicking a link follows it). Each line break is kept.
+  The same formatting appears in the hover preview, in printouts and PDFs, and (as Markdown) in exports.
 - **3 passages** jumps to the linked passages in the text; click again for the next one.
 
 ## Region numbers
@@ -115,11 +121,11 @@ see [Slides and PDFs](slides-and-pdfs.md)). The image fills the left side and it
 - **Drag the divider** between image and comments to resize them (remembered for all image pages). On phones they
   stack.
 
-**Toolbar**
+**Toolbar** (to move between the slides of a folder, use **‹ ›** in the top bar or `←` / `→` — see
+[Moving between slides and pages](slides-and-pdfs.md#moving-between-slides-and-pages))
 
 | Button | Keys | Action |
 | --- | --- | --- |
-| **‹** *3/32* **›** (slides only) | `Page Up` / `Page Down`, `Alt ←` / `Alt →` | Previous / next slide in the folder |
 | Undo / Redo | `Ctrl Z` / `Ctrl Shift Z` or `Ctrl Y` | Undo or redo region and comment changes (up to 200 steps, until you leave the page) |
 | Zoom out / Zoom in | `-` / `+` (or `=`) | 50 %, 75 %, Fit, 150 %, 200 %, 300 %, 400 % |
 | *Fit* / Fit to pane | `0` | Fit the image to the pane |

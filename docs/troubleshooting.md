@@ -59,6 +59,15 @@ Restore a backup from `data/backups/` — see [Restoring a backup](backups-and-e
 Inside a drawing, and in a page while text is selected, `Ctrl K` belongs to the editor (it makes a link). Click
 elsewhere first, or use **Search** in the sidebar.
 
+**My theme edits don't show up.**
+Save the file, then click into the Gloss window: themes are reloaded when the window gets focus. Check that the file is
+in your themes folder (Settings → Themes shows its path) and ends in `.css`. A typo in CSS only breaks the rule it is
+in; the browser's developer tools (F12) show which.
+
+**A theme's fonts don't load.**
+Font files must be next to the theme, in a folder with the theme's name, and linked relatively
+(`url("my-theme/fonts/x.woff2")`). Web fonts (`@import url("https://…")`) need internet.
+
 **The guided tour keeps appearing / never appears.**
 It shows once per browser. It reappears if your browser doesn't keep site data (private windows). Replay it any time
 with **Guided tour** in the sidebar.
