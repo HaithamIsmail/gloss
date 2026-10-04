@@ -1,0 +1,73 @@
+/*
+ * @name        Midnight
+ * @author      Gloss
+ * @description A dark theme for late study sessions: deep slate, warm off-white text and a coral accent.
+ * @order       5
+ * @scheme      dark
+ */
+
+:root {
+  color-scheme: dark;
+
+  --color-bg: #15171c;
+  --color-surface: #1b1e24;
+  --color-paper: #232730;
+  --color-text: #e7e5e1;
+  --color-accent: #ff6a4d;
+  --color-on-accent: #1c100c;
+  --color-success: #5cc27a;
+  --color-image-bg: #f2f2f2; /* images and slides stay on a light plate */
+  --color-divider: rgba(231, 229, 225, 0.2);
+
+  --page-background: var(--color-bg);
+  --sidebar-background: var(--color-surface);
+
+  /* Dark to light: 100–300 are the hover and selected backgrounds. */
+  --color-neutral-100: #1c1f25;
+  --color-neutral-200: #23272f;
+  --color-neutral-300: #2d323b;
+  --color-neutral-400: #3d434e;
+  --color-neutral-500: #5d6470;
+  --color-neutral-600: #7f8692;
+  --color-neutral-700: #a3a9b3;
+  --color-neutral-800: #c8cdd4;
+  --color-neutral-900: #e4e7eb;
+
+  /* Tints are deep coral; the "deeper" shades are lighter so they read on dark. */
+  --color-accent-100: #2a1d1a;
+  --color-accent-200: #3b2520;
+  --color-accent-300: #573229;
+  --color-accent-400: #8c4636;
+  --color-accent-500: #cc563f;
+  --color-accent-600: #ff7d63;
+  --color-accent-700: #ff9a85;
+  --color-accent-800: #ffb9aa;
+  --color-accent-900: #ffdcd3;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.6);
+
+  --code-keyword: #ff8f78;
+  --code-string: #95d48a;
+  --code-comment: #7f8692;
+  --code-number: #f5bd6e;
+  --code-name: #e7e5e1;
+  --code-muted: #a3a9b3;
+
+  --ansi-red: #ff7b6b;
+  --ansi-green: #8fd58a;
+  --ansi-yellow: #f2c66d;
+  --ansi-blue: #7fb0ff;
+  --ansi-magenta: #e39be0;
+  --ansi-cyan: #6fd3d3;
+  --ansi-black: #a3a9b3;
+  --ansi-white: #e7e5e1;
+}
+
+/* Images inside pages keep their own colours; soften the glare a little. */
+.material-doc img,
+.slide-thumb img,
+.nb-img {
+  filter: brightness(0.94);
+}

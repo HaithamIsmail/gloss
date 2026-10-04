@@ -157,6 +157,14 @@ function styled(text: string, styles: Record<string, unknown>): string {
   return (lead + s + trail).replace(/\n/g, "  \n");
 }
 
+/** A numbered region comment. Comments are Markdown already; later lines are indented under the number. */
+function commentItem(n: number, comment: string) {
+  const prefix = `${n}. `;
+  const body = comment.trim() || "_(no comment)_";
+  const indent = " ".repeat(prefix.length);
+  return prefix + body.split(/\r?\n/).map((l, i) => (i && l ? indent + l : l)).join("\n");
+}
+
 const ALERT: Record<string, string> = { note: "NOTE", tip: "TIP", warning: "WARNING", exam: "IMPORTANT" };
 
 function fence(code: string, lang = "") {
@@ -229,7 +237,7 @@ function blockMd(b: LooseBlock, ctx: Ctx, listNo: number): string {
     case ANNOTATED_IMAGE: {
       const name = String(p.name ?? "") || "image";
       const lines = [`![${escapeMd(name)}](${asset(ctx, String(p.url ?? ""))})`];
-      const comments = parseAnnotations(p.annotations).map((a) => `${ctx.nextRegion++}. ${escapeMd(a.comment || "(no comment)")}`);
+      const comments = parseAnnotations(p.annotations).map((a) => commentItem(ctx.nextRegion++, a.comment));
       if (comments.length) lines.push("", ...comments);
       return lines.join("\n");
     }
@@ -284,7 +292,7 @@ function imagePageMd(m: Material, ctx: Ctx): string {
   const page = asImagePage(m.content);
   const lines = [`# ${escapeMd(m.title || "Untitled")}`, ""];
   if (page.url) lines.push(`![${escapeMd(page.name || "image")}](${asset(ctx, page.url)})`, "");
-  page.annotations.forEach((a, i) => lines.push(`${i + 1}. ${escapeMd(a.comment || "(no comment)")}`));
+  page.annotations.forEach((a, i) => lines.push(commentItem(i + 1, a.comment)));
   return `${lines.join("\n").trimEnd()}\n`;
 }
 

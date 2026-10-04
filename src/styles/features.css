@@ -39,7 +39,7 @@ a.btn-secondary {
   margin-left: 8px;
   padding: 1px 6px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -473,7 +473,7 @@ a.btn-secondary {
   padding: 10px 12px;
   border: 0;
   border-bottom: var(--rule);
-  background: #fff;
+  background: var(--color-paper);
   font: 14px var(--font-mono);
 }
 
@@ -523,7 +523,7 @@ a.btn-secondary {
 .math-source {
   border: var(--rule-ink);
   border-top: 0;
-  background: #fff;
+  background: var(--color-paper);
 }
 
 .math-source textarea {
@@ -602,7 +602,7 @@ a.btn-secondary {
 
 .history-item.is-active {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .history-item.is-active small {
@@ -935,7 +935,7 @@ a.btn-secondary {
   min-width: 20px;
   padding: 3px 5px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font: 800 11px/1 var(--font-body);
   text-align: center;
 }
@@ -1081,4 +1081,210 @@ a.btn-secondary {
   .static-figure-img img {
     max-height: 200mm;
   }
+}
+
+/* ── Settings: themes ──────────────────────────────────────────────────── */
+
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 18px 0 8px;
+  border-bottom: var(--rule-ink);
+}
+
+.settings-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: calc(-1 * var(--rule-width));
+  padding: 9px 16px;
+  border-bottom: calc(var(--rule-width) + 2px) solid transparent;
+  color: var(--color-neutral-700);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.settings-tab:hover {
+  color: var(--color-text);
+}
+
+.settings-tab.is-active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.themes-tab .page-lede {
+  margin: 14px 0 6px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 22px;
+  margin: 14px 0 8px;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  border: var(--rule);
+  border-radius: var(--radius);
+  background: var(--color-paper);
+  overflow: hidden;
+}
+
+.theme-card.is-current {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.theme-preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--rule);
+  background: var(--color-surface);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* The mock is drawn at 2× and scaled down, so it looks like the app in miniature. */
+.theme-frame {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 200%;
+  height: 200%;
+  border: 0;
+  transform: scale(0.5);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.theme-preview:hover .theme-frame {
+  filter: brightness(0.97);
+}
+
+.theme-current {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.theme-info {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  padding: 12px 14px 6px;
+}
+
+.theme-name {
+  font-size: 16px;
+}
+
+.theme-badges {
+  display: flex;
+  gap: 4px;
+}
+
+.theme-badge {
+  padding: 1px 7px;
+  border: 1px solid var(--color-neutral-400);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+}
+
+.theme-description {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-neutral-800);
+}
+
+.theme-author {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+
+.theme-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 8px 14px 14px;
+}
+
+.theme-actions .icon-btn {
+  margin-left: auto;
+}
+
+.theme-howto {
+  margin-top: 40px;
+  padding: 18px 22px;
+  border: var(--rule);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  max-width: 820px;
+}
+
+.theme-howto h2 {
+  margin: 0 0 8px;
+  font: var(--font-heading-weight) 20px/1.2 var(--font-heading);
+}
+
+.theme-howto ol {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  line-height: 1.6;
+}
+
+.theme-howto code {
+  font: 600 0.9em var(--font-mono);
+}
+
+.theme-howto a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.icon-btn.inline {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+/* ── Moving between the pages of a folder (top bar) ────────────────────── */
+
+.folder-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 6px;
+  padding-right: 8px;
+  border-right: var(--rule);
+}
+
+.folder-nav-pos {
+  min-width: 46px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-neutral-700);
 }

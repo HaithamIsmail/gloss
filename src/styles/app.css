@@ -3,7 +3,7 @@
 .app {
   display: flex;
   height: 100vh;
-  background: var(--color-bg);
+  background: var(--page-background);
 }
 
 .grow {
@@ -31,7 +31,7 @@ kbd {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--color-surface);
+  background: var(--sidebar-background);
   border-right: var(--rule);
   transition: margin-left 0.18s ease;
 }
@@ -360,7 +360,7 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .check.is-on {
@@ -431,7 +431,7 @@ kbd {
   min-width: 160px;
   border: 0;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font-size: 14px;
   font-weight: 800;
   text-align: left;
@@ -791,7 +791,7 @@ kbd {
   position: absolute;
   border: 2px solid var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-paper) 85%, transparent);
 }
 
 .region-peek-box span {
@@ -799,7 +799,7 @@ kbd {
   left: -2px;
   top: -2px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font: 800 10px/1 var(--font-body);
   padding: 3px 5px;
 }
@@ -1073,7 +1073,7 @@ a.btn-primary {
   justify-content: center;
   height: 150px;
   margin-bottom: 8px;
-  background: #fff;
+  background: var(--color-image-bg);
   border: var(--rule);
   overflow: hidden;
 }
@@ -1248,7 +1248,7 @@ a.btn-primary {
   margin: auto;
   flex: none;
   box-shadow: var(--shadow-md);
-  background: #fff;
+  background: var(--color-image-bg);
 }
 
 .image-empty {
@@ -1462,7 +1462,7 @@ button.tree-row {
   justify-content: center;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-image-bg);
   border: var(--rule);
   transition: border-color 0.12s, box-shadow 0.12s;
 }
@@ -1485,7 +1485,7 @@ button.tree-row {
   min-width: 22px;
   padding: 3px 6px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font: 800 11px/1 var(--font-body);
   text-align: center;
 }

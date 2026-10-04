@@ -4,6 +4,7 @@ import { MoveHost } from "./components/MoveDialog";
 import { SearchDialog } from "./components/SearchDialog";
 import { Sidebar } from "./components/Sidebar";
 import { Toasts } from "./components/Toasts";
+import { ThemeSync } from "./theme/ThemeSync";
 import { TourHost } from "./tour/Tour";
 import { TopBar } from "./components/TopBar";
 import { DrawingModalHost } from "./drawing/DrawingModal";
@@ -11,6 +12,7 @@ import { SlideImportHost } from "./slides/SlideImport";
 import { CoursePage } from "./pages/CoursePage";
 import { BackupsPage } from "./pages/BackupsPage";
 import { HomePage } from "./pages/HomePage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { TrashPage } from "./pages/TrashPage";
 import { useUI } from "./store";
 
@@ -71,6 +73,7 @@ function Layout() {
       <MoveHost />
       <Toasts />
       <TourHost />
+      <ThemeSync />
     </div>
   );
 }
@@ -98,6 +101,8 @@ const router = createBrowserRouter([
       { path: "canvas/:drawingId", element: <CanvasPage /> },
       { path: "trash", element: <TrashPage /> },
       { path: "backups", element: <BackupsPage /> },
+      { path: "settings", element: <SettingsPage /> },
+      { path: "settings/:tab", element: <SettingsPage /> },
       { path: "*", element: <NotFound /> },
     ],
   },

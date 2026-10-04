@@ -86,7 +86,7 @@ export default function DrawingCanvas({
       <Excalidraw
         initialData={initialData}
         name={name}
-        theme="light"
+        theme={document.documentElement.dataset.scheme === "dark" ? "dark" : "light"}
         autoFocus
         UIOptions={{
           canvasActions: { loadScene: false, saveToActiveFile: false, toggleTheme: null, export: false },

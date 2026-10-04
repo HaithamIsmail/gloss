@@ -265,6 +265,19 @@ export const STEPS: TourStep[] = [
     ),
   },
   {
+    id: "themes",
+    sidebar: true,
+    target: "[data-tour=settings]",
+    placement: "right",
+    title: "Make it yours",
+    body: (
+      <p>
+        <strong>Settings → Themes</strong> changes the colours, fonts and feel of the whole app: Washi, Shuimo, Pokémon,
+        Midnight (dark)… Themes are CSS files, so you can make your own.
+      </p>
+    ),
+  },
+  {
     id: "done",
     sidebar: true,
     target: "[data-tour=tour]",

@@ -9,35 +9,35 @@ import { useEffect, useMemo, useRef } from "react";
 
 export type RunMode = "next" | "stay" | "insert";
 
-// Ink, one red, and grey: the Modernist palette applied to code.
+// Colours come from the theme (--code-* variables in tokens.css).
 const highlight = HighlightStyle.define([
-  { tag: [t.keyword, t.controlKeyword, t.operatorKeyword, t.definitionKeyword, t.moduleKeyword], color: "#ae1800", fontWeight: "600" },
-  { tag: [t.string, t.special(t.string), t.regexp], color: "#3f6b34" },
-  { tag: [t.comment, t.lineComment, t.blockComment], color: "#7d7979", fontStyle: "italic" },
-  { tag: [t.number, t.bool, t.null], color: "#7c1405" },
-  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "#201e1d", fontWeight: "600" },
-  { tag: [t.definition(t.variableName), t.definition(t.function(t.variableName)), t.className], color: "#201e1d", fontWeight: "700" },
-  { tag: [t.self, t.atom], color: "#ae1800" },
-  { tag: [t.heading], color: "#201e1d", fontWeight: "800" },
+  { tag: [t.keyword, t.controlKeyword, t.operatorKeyword, t.definitionKeyword, t.moduleKeyword], color: "var(--code-keyword)", fontWeight: "600" },
+  { tag: [t.string, t.special(t.string), t.regexp], color: "var(--code-string)" },
+  { tag: [t.comment, t.lineComment, t.blockComment], color: "var(--code-comment)", fontStyle: "italic" },
+  { tag: [t.number, t.bool, t.null], color: "var(--code-number)" },
+  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "var(--code-name)", fontWeight: "600" },
+  { tag: [t.definition(t.variableName), t.definition(t.function(t.variableName)), t.className], color: "var(--code-name)", fontWeight: "700" },
+  { tag: [t.self, t.atom], color: "var(--code-keyword)" },
+  { tag: [t.heading], color: "var(--code-name)", fontWeight: "800" },
   { tag: [t.emphasis], fontStyle: "italic" },
   { tag: [t.strong], fontWeight: "700" },
-  { tag: [t.link, t.url], color: "#ae1800" },
-  { tag: [t.monospace], color: "#605d5d" },
+  { tag: [t.link, t.url], color: "var(--code-keyword)" },
+  { tag: [t.monospace], color: "var(--code-muted)" },
 ]);
 
 const theme = EditorView.theme({
   "&": { backgroundColor: "transparent", fontSize: "14px" },
   "&.cm-focused": { outline: "none" },
-  ".cm-content": { fontFamily: "var(--font-mono)", padding: "10px 0", caretColor: "#ec3013" },
+  ".cm-content": { fontFamily: "var(--font-mono)", padding: "10px 0", caretColor: "var(--color-accent)" },
   ".cm-line": { padding: "0 12px" },
   ".cm-gutters": { display: "none" },
   ".cm-selectionBackground, &.cm-focused .cm-selectionBackground, ::selection": {
-    backgroundColor: "rgba(236, 48, 19, 0.18) !important",
+    backgroundColor: "color-mix(in srgb, var(--color-accent) 18%, transparent) !important",
   },
-  ".cm-matchingBracket": { backgroundColor: "rgba(236, 48, 19, 0.15)", outline: "none" },
-  ".cm-tooltip": { border: "2px solid #201e1d", borderRadius: "0", backgroundColor: "#f3f2f2" },
-  ".cm-tooltip-autocomplete ul li[aria-selected]": { backgroundColor: "#ec3013", color: "#fff" },
-  ".cm-placeholder": { color: "#9b9797" },
+  ".cm-matchingBracket": { backgroundColor: "color-mix(in srgb, var(--color-accent) 15%, transparent)", outline: "none" },
+  ".cm-tooltip": { border: "var(--rule-ink)", borderRadius: "var(--radius-sm)", backgroundColor: "var(--color-bg)", color: "var(--color-text)" },
+  ".cm-tooltip-autocomplete ul li[aria-selected]": { backgroundColor: "var(--color-accent)", color: "var(--color-on-accent)" },
+  ".cm-placeholder": { color: "var(--color-neutral-500)" },
 });
 
 /** A CodeMirror editor for a notebook cell, with Jupyter's run shortcuts. */

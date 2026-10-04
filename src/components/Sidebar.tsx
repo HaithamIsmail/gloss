@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Compass, DatabaseBackup, LayoutGrid, PenTool, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Compass, DatabaseBackup, LayoutGrid, PenTool, Plus, Search, Settings, Trash2 } from "lucide-react";
 import { useEffect, useRef, type DragEvent } from "react";
 import { Link, useMatch, useNavigate } from "react-router";
 import type { Course, MaterialSummary } from "../../shared/api";
@@ -21,6 +21,7 @@ export function Sidebar() {
   const canvasMatch = useMatch("/canvas/*");
   const trashMatch = useMatch("/trash");
   const backupsMatch = useMatch("/backups");
+  const settingsMatch = useMatch("/settings/*");
   const courseMatch = useMatch("/c/:courseId");
   const materialMatch = useMatch("/m/:materialId");
   const activeMaterialId = materialMatch?.params.materialId;
@@ -90,6 +91,15 @@ export function Sidebar() {
         <button type="button" className={`side-btn${backupsMatch ? " is-active" : ""}`} onClick={() => navigate("/backups")}>
           <DatabaseBackup size={16} />
           <span>Backups and export</span>
+        </button>
+        <button
+          type="button"
+          className={`side-btn${settingsMatch ? " is-active" : ""}`}
+          data-tour="settings"
+          onClick={() => navigate("/settings/themes")}
+        >
+          <Settings size={16} />
+          <span>Settings</span>
         </button>
         <button type="button" className="side-btn" data-tour="tour" onClick={startTour}>
           <Compass size={16} />

@@ -10,6 +10,8 @@ import type {
   Material,
   MaterialSummary,
   SearchResult,
+  ThemeInfo,
+  ThemeList,
   TrashItem,
   TrashKind,
   Tree,
@@ -83,6 +85,13 @@ export const api = {
   purgeTrash: (id: string) => request<void>("DELETE", `/api/trash/${id}`),
   emptyTrash: () => request<void>("DELETE", "/api/trash"),
   backups: () => request<BackupInfo[]>("GET", "/api/backups"),
+  themes: () => request<ThemeList>("GET", "/api/themes"),
+  setTheme: (id: string) => request<ThemeList>("PUT", "/api/themes/current", { id }),
+  createTheme: (input: { name?: string; css?: string; fileName?: string } = {}) =>
+    request<ThemeInfo>("POST", "/api/themes", input),
+  duplicateTheme: (id: string) => request<ThemeInfo>("POST", "/api/themes/duplicate", { id }),
+  removeTheme: (id: string) => request<ThemeList>("DELETE", `/api/themes?id=${encodeURIComponent(id)}`),
+  openThemesFolder: () => request<void>("POST", "/api/themes/open-folder"),
   backupNow: () => request<BackupInfo>("POST", "/api/backups"),
   appendToMaterial: (id: string, blocks: LooseBlock[]) =>
     request<MaterialSummary>("POST", `/api/materials/${id}/append`, { blocks }),
@@ -137,6 +146,7 @@ export const keys = {
   versions: (id: string) => ["versions", id] as const,
   backlinks: (id: string) => ["backlinks", id] as const,
   backups: ["backups"] as const,
+  themes: ["themes"] as const,
 };
 
 export function useTree() {
@@ -305,6 +315,13 @@ export function rememberDrawing(summary: DrawingSummary, scene?: DrawingScene) {
 export function forgetDrawing(id: string) {
   queryClient.setQueryData<DrawingSummary[]>(keys.drawings, (list) => list?.filter((d) => d.id !== id));
   queryClient.removeQueries({ queryKey: keys.drawing(id) });
+}
+
+// ── Themes ───────────────────────────────────────────────────────────────
+
+/** The theme list; refreshed when the window gets focus, so edits to a theme file show up. */
+export function useThemes() {
+  return useQuery({ queryKey: keys.themes, queryFn: api.themes, staleTime: 0, refetchOnWindowFocus: true });
 }
 
 // ── Python environments ──────────────────────────────────────────────────

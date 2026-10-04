@@ -6,6 +6,7 @@ import type { Course, Material, MaterialSummary } from "../../shared/api";
 import { api, keys, useTree } from "../api";
 import { APP_NAME } from "../components/Logo";
 import { StaticContent } from "../print/Static";
+import { ThemeSync } from "../theme/ThemeSync";
 import { childrenOf, topLevel } from "../tree";
 
 type Entry = { summary: MaterialSummary; depth: number };
@@ -69,6 +70,7 @@ export function PrintPage() {
 
   return (
     <div className="print-page">
+      <ThemeSync />
       <div className="print-bar no-print">
         <Link to={scope === "c" ? `/c/${id}` : `/m/${id}`} className="btn-secondary small">
           <ArrowLeft size={15} /> Back

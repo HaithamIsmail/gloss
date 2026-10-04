@@ -1,0 +1,150 @@
+/*
+ * @name        Washi 和紙
+ * @author      Gloss
+ * @description Kinari paper, sumi ink and a vermilion seal. Mincho headings, fine lines, quiet indigo labels.
+ * @order       2
+ * @scheme      light
+ */
+
+/* Shippori Mincho and Zen Kaku Gothic New (SIL Open Font License, see washi/fonts/).
+   Only their Latin letters ship with the theme; Japanese text uses the system's
+   Mincho and Gothic fonts listed after them. */
+@font-face {
+  font-family: "Shippori Mincho";
+  src: url("washi/fonts/shippori-mincho-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Shippori Mincho";
+  src: url("washi/fonts/shippori-mincho-latin-800-normal.woff2") format("woff2");
+  font-weight: 700 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("washi/fonts/zen-kaku-gothic-new-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("washi/fonts/zen-kaku-gothic-new-latin-500-normal.woff2") format("woff2");
+  font-weight: 500 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("washi/fonts/zen-kaku-gothic-new-latin-700-normal.woff2") format("woff2");
+  font-weight: 700 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  --color-bg: #f4eee2; /* kinari, unbleached paper */
+  --color-surface: #ebe3d3;
+  --color-paper: #fcf9f2;
+  --color-text: #26252d; /* sumi */
+  --color-accent: #c8422d; /* shu, vermilion */
+  --color-on-accent: #fdf9f1;
+  --color-success: #5b7f4a;
+  --color-image-bg: #fcf9f2;
+  --color-divider: rgba(38, 37, 45, 0.22);
+
+  /* Fibrous washi, made with an SVG noise filter (no image file needed). */
+  --washi-fibres: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.38  0 0 0 0 0.27  0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  --page-background: var(--washi-fibres), var(--color-bg);
+  --sidebar-background: var(--washi-fibres), var(--color-surface);
+
+  --color-neutral-100: #f8f3ea;
+  --color-neutral-200: #ede6d8;
+  --color-neutral-300: #ded5c3;
+  --color-neutral-400: #c3b9a5;
+  --color-neutral-500: #a39a87;
+  --color-neutral-600: #817a6c;
+  --color-neutral-700: #635d54;
+  --color-neutral-800: #46423c;
+  --color-neutral-900: #2f2c28;
+
+  --color-accent-100: #fbefe8;
+  --color-accent-200: #f6dccf;
+  --color-accent-300: #edbfac;
+  --color-accent-400: #e0937b;
+  --color-accent-500: #d3654a;
+  --color-accent-600: #b5381f;
+  --color-accent-700: #963019;
+  --color-accent-800: #6f2514;
+  --color-accent-900: #491a0f;
+
+  --font-body: "Zen Kaku Gothic New", "Yu Gothic", "YuGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", "Noto Sans CJK JP", "Meiryo", system-ui, sans-serif;
+  --font-heading: "Shippori Mincho", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Noto Serif JP",
+    "Noto Serif CJK JP", "MS PMincho", serif;
+  --font-heading-weight: 800;
+
+  --radius-sm: 2px;
+  --radius: 3px;
+  --radius-lg: 4px;
+  --rule-width: 1px;
+
+  --shadow-sm: 0 1px 2px rgba(70, 52, 30, 0.1);
+  --shadow-md: 0 4px 14px rgba(70, 52, 30, 0.12);
+  --shadow-lg: 0 16px 40px rgba(70, 52, 30, 0.18);
+
+  --code-keyword: #963019;
+  --code-string: #4f6b3c;
+  --code-comment: #918876;
+  --code-number: #2b4c7e;
+  --code-name: #26252d;
+  --code-muted: #635d54;
+
+  --washi-ai: #2b4c7e; /* ai, indigo */
+}
+
+/* Labels in indigo, widely spaced. */
+.kicker {
+  color: var(--washi-ai);
+  letter-spacing: 0.22em;
+}
+
+/* Titles set like a book: Mincho, a little air between letters. */
+.page-title,
+.input-title {
+  letter-spacing: 0.02em;
+}
+
+.material-doc [data-content-type="heading"] {
+  letter-spacing: 0.02em;
+}
+
+/* Sections open with a vermilion hairline instead of a heavy rule. */
+.material-doc [data-content-type="heading"]:is([data-level="1"], :not([data-level])) {
+  border-top-color: var(--color-accent);
+}
+
+/* The logo becomes a seal (hanko). */
+.sidebar-brand svg {
+  border-radius: 4px;
+  transform: rotate(-3deg);
+}
+
+.brand-name {
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+}
+
+/* The open material: a vermilion mark on the left, like a bookmark ribbon. */
+.material-row.is-active {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.btn-primary {
+  letter-spacing: 0.04em;
+}
+
+.callout {
+  border-left-width: 3px;
+}

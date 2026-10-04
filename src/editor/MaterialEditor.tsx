@@ -27,23 +27,22 @@ const ATOM = String.fromCharCode(0xfffc);
 // An opening $ not glued to a word (so "$5 and $10" stays text), no spaces just inside.
 const INLINE_MATH = /(^|[^\\\w$])\$([^$\s](?:[^$]*[^$\s])?)$/;
 
-const ink = "#201e1d";
-const ground = "#f3f2f2";
-
+// Colours and fonts come from the theme's CSS variables (see styles/tokens.css).
 const theme: Theme = {
   colors: {
-    editor: { text: ink, background: "transparent" },
-    menu: { text: ink, background: ground },
-    tooltip: { text: ground, background: ink },
-    hovered: { text: ink, background: "#ffe0d9" },
-    selected: { text: ground, background: "#ec3013" },
-    disabled: { text: "#9b9797", background: "#eae7e7" },
-    shadow: "rgba(45, 43, 43, 0.22)",
-    border: ink,
-    sideMenu: "#7d7979",
+    editor: { text: "var(--color-text)", background: "transparent" },
+    menu: { text: "var(--color-text)", background: "var(--color-bg)" },
+    tooltip: { text: "var(--color-bg)", background: "var(--color-text)" },
+    hovered: { text: "var(--color-text)", background: "var(--color-accent-200)" },
+    selected: { text: "var(--color-on-accent)", background: "var(--color-accent)" },
+    disabled: { text: "var(--color-neutral-500)", background: "var(--color-neutral-200)" },
+    shadow: "color-mix(in srgb, var(--color-text) 22%, transparent)",
+    border: "var(--color-text)",
+    sideMenu: "var(--color-neutral-600)",
   },
+  // The radius follows the theme (--radius, see theme-hooks.css).
   borderRadius: 0,
-  fontFamily: '"Archivo Variable", "Archivo", system-ui, sans-serif',
+  fontFamily: "var(--font-body)",
 };
 
 export function MaterialEditor({ material }: { material: Material }) {

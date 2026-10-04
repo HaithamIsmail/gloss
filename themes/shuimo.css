@@ -1,0 +1,148 @@
+/*
+ * @name        Shuimo 水墨
+ * @author      Gloss
+ * @description Ink wash on xuan paper: brush-script titles, Song body text, a cinnabar seal and jade labels.
+ * @order       3
+ * @scheme      light
+ */
+
+/* Ma Shan Zheng, ZCOOL XiaoWei and Noto Serif SC (SIL Open Font License, see
+   shuimo/fonts/). Only their Latin letters ship with the theme; Chinese text
+   uses the system's Song/Kai fonts listed after them. */
+@font-face {
+  font-family: "Ma Shan Zheng";
+  src: url("shuimo/fonts/ma-shan-zheng-latin-400-normal.woff2") format("woff2");
+  font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ZCOOL XiaoWei";
+  src: url("shuimo/fonts/zcool-xiaowei-latin-400-normal.woff2") format("woff2");
+  font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("shuimo/fonts/noto-serif-sc-latin-400-normal.woff2") format("woff2");
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("shuimo/fonts/noto-serif-sc-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("shuimo/fonts/noto-serif-sc-latin-700-normal.woff2") format("woff2");
+  font-weight: 700 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  --color-bg: #f5f1e7; /* xuan paper */
+  --color-surface: #ebe5d7;
+  --color-paper: #fbf9f3;
+  --color-text: #1d1b19; /* ink */
+  --color-accent: #b5302a; /* cinnabar, the seal's red */
+  --color-on-accent: #fbf6ee;
+  --color-success: #3f7d6e;
+  --color-image-bg: #fbf9f3;
+  --color-divider: rgba(29, 27, 25, 0.24);
+
+  --shuimo-jade: #3f7d6e;
+  --shuimo-paper: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.28  0 0 0 0 0.24  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  /* Ink-wash mountains and a red sun, faint, in the bottom right corner. */
+  --shuimo-mountains: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 280'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%231d1b19' stop-opacity='.13'/><stop offset='.75' stop-color='%231d1b19' stop-opacity='.03'/><stop offset='1' stop-color='%231d1b19' stop-opacity='0'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%231d1b19' stop-opacity='.07'/><stop offset='1' stop-color='%231d1b19' stop-opacity='0'/></linearGradient><linearGradient id='h' x1='0' x2='1'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='.4' stop-color='white'/></linearGradient><mask id='m'><rect width='640' height='280' fill='url(%23h)'/></mask></defs><g mask='url(%23m)'><circle cx='498' cy='70' r='26' fill='%23b5302a' fill-opacity='.14'/><path d='M0 280V178c46-12 74-62 118-70 46-8 60 46 104 42 50-5 66-96 122-104 58-8 74 78 128 84 44 5 62-30 98-36 30-5 50 8 70 18v168Z' fill='url(%23b)'/><path d='M0 280v-58c58-10 98-46 150-40 56 6 82 40 136 34 60-7 92-60 150-56 50 4 76 40 120 44 30 3 56-6 84-14v90Z' fill='url(%23a)'/></g></svg>");
+  --page-background: var(--shuimo-mountains) right 0 bottom 0 / min(720px, 62%) auto no-repeat, var(--shuimo-paper),
+    var(--color-bg);
+  --sidebar-background: var(--shuimo-paper), var(--color-surface);
+
+  --color-neutral-100: #f7f4ec;
+  --color-neutral-200: #ece7db;
+  --color-neutral-300: #dbd4c6;
+  --color-neutral-400: #bdb6a7;
+  --color-neutral-500: #9d9688;
+  --color-neutral-600: #7b756b;
+  --color-neutral-700: #5c5750;
+  --color-neutral-800: #3f3b36;
+  --color-neutral-900: #2a2723;
+
+  --color-accent-100: #f9ecea;
+  --color-accent-200: #f2d6d2;
+  --color-accent-300: #e6b2ac;
+  --color-accent-400: #d4847c;
+  --color-accent-500: #c4554c;
+  --color-accent-600: #a32b25;
+  --color-accent-700: #85241f;
+  --color-accent-800: #631b17;
+  --color-accent-900: #431311;
+
+  --font-body: "Noto Serif SC", "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  --font-heading: "ZCOOL XiaoWei", "STKaiti", "KaiTi", "Kaiti SC", "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-heading-weight: 400;
+
+  --radius-sm: 2px;
+  --radius: 2px;
+  --radius-lg: 3px;
+  --rule-width: 1px;
+
+  --shadow-sm: 0 1px 2px rgba(29, 27, 25, 0.1);
+  --shadow-md: 0 4px 14px rgba(29, 27, 25, 0.12);
+  --shadow-lg: 0 18px 44px rgba(29, 27, 25, 0.2);
+
+  --code-keyword: #85241f;
+  --code-string: #3f7d6e;
+  --code-comment: #9d9688;
+  --code-number: #8a5a1c;
+  --code-name: #1d1b19;
+  --code-muted: #5c5750;
+}
+
+/* Page titles in brush script (Ma Shan Zheng), the rest of the headings in ZCOOL XiaoWei. */
+.page-title,
+.input-title {
+  font-family: "Ma Shan Zheng", var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.kicker {
+  color: var(--shuimo-jade);
+  letter-spacing: 0.18em;
+}
+
+a,
+.mention {
+  color: var(--shuimo-jade);
+}
+
+/* Section numbers like a seal: cinnabar. Headings in ink, ruled with a brush-thin line. */
+.material-doc [data-content-type="heading"] .bn-inline-content {
+  letter-spacing: 0.02em;
+}
+
+/* The logo as a square seal with slightly worn corners. */
+.sidebar-brand svg {
+  border-radius: 3px;
+}
+
+.brand-name {
+  font-family: "Ma Shan Zheng", var(--font-heading);
+  font-weight: 400;
+  font-size: 24px;
+}
+
+.material-row.is-active {
+  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+/* Callouts like a note pasted beside a painting. */
+.callout {
+  background: color-mix(in srgb, var(--shuimo-jade) 7%, var(--color-paper));
+  border-left-color: var(--shuimo-jade);
+}

@@ -12,6 +12,7 @@ export default defineConfig({
     proxy: {
       "/api": { target: api, ws: true },
       "/uploads": api,
+      "/themes": api,
       "/excalidraw-assets": api,
       "/pyodide": api,
       "/pdfjs": api,

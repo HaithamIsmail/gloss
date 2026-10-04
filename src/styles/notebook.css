@@ -94,7 +94,7 @@
 }
 
 .kernel-dot.is-idle {
-  background: #3f8a46;
+  background: var(--color-success);
 }
 
 .kernel-dot.is-busy,
@@ -441,7 +441,7 @@
 .nb-add-end button:hover {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .nb-add-end {
@@ -641,7 +641,7 @@
   display: block;
   max-width: 100%;
   margin: 4px 0;
-  background: #fff;
+  background: var(--color-image-bg);
 }
 
 .nb-html {
@@ -674,14 +674,14 @@
 
 /* ANSI colours in tracebacks and printed output */
 .ansi-bold { font-weight: 700; }
-.ansi-red { color: #ae1800; }
-.ansi-green { color: #3f6b34; }
-.ansi-yellow { color: #8a6100; }
-.ansi-blue { color: #2d4f8a; }
-.ansi-magenta { color: #7d2b6e; }
-.ansi-cyan { color: #1f6b6b; }
-.ansi-black { color: #201e1d; }
-.ansi-white { color: #605d5d; }
+.ansi-red { color: var(--ansi-red); }
+.ansi-green { color: var(--ansi-green); }
+.ansi-yellow { color: var(--ansi-yellow); }
+.ansi-blue { color: var(--ansi-blue); }
+.ansi-magenta { color: var(--ansi-magenta); }
+.ansi-cyan { color: var(--ansi-cyan); }
+.ansi-black { color: var(--ansi-black); }
+.ansi-white { color: var(--ansi-white); }
 
 @media (max-width: 760px) {
   .nb-cell {

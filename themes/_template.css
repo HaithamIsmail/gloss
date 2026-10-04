@@ -1,0 +1,137 @@
+/*
+ * @name        My theme
+ * @author      You
+ * @description A short line shown under the theme's name in Settings.
+ * @scheme      light
+ */
+
+/*
+  How themes work
+  ───────────────
+  A theme is a CSS file. Gloss loads it after its own styles, so anything here
+  wins. The easy part is the variables below: change a value, save the file,
+  and switch back to Gloss — it picks up the change when the window gets focus.
+
+  Delete the lines you don't need: anything you leave out keeps the default
+  (Modernist) value. Fonts or pictures can go in a folder next to this file
+  with the same name (my-theme.css → my-theme/fonts/…), linked relatively:
+  url("my-theme/fonts/MyFont.woff2").
+
+  @scheme dark tells Gloss to draw native controls, the drawing canvas and
+  scrollbars in dark mode (also set color-scheme: dark below).
+
+  Below the variables there are examples of plain CSS rules for bigger changes.
+*/
+
+/* Fonts you ship with the theme (optional) ─────────────────────────────── */
+/*
+@font-face {
+  font-family: "My Font";
+  src: url("my-theme/fonts/MyFont.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+*/
+
+:root {
+  color-scheme: light; /* light | dark */
+
+  /* ── Main colours ─────────────────────────────────────────────────────── */
+  --color-bg: #f3f2f2; /* page background */
+  --color-surface: #eae9e9; /* sidebar, panels, code blocks */
+  --color-paper: #ffffff; /* text fields, cards and pop-ups that sit on the page */
+  --color-text: #201e1d; /* text, and thin ink rules */
+  --color-accent: #ec3013; /* the one strong colour: buttons, numbers, regions */
+  --color-on-accent: #ffffff; /* text and icons drawn on the accent colour */
+  --color-success: #3f8a46; /* the "idle" dot of a notebook kernel */
+  --color-image-bg: #ffffff; /* behind images, slides and drawings */
+  /* --color-divider: color-mix(in srgb, var(--color-text) 40%, transparent); */
+
+  /* Backgrounds of the two big areas. Any CSS background works here:
+     a colour, a gradient, or url("my-theme/paper.png") with a colour after it. */
+  --page-background: var(--color-bg);
+  --sidebar-background: var(--color-surface);
+
+  /* ── Greys, light to dark (in a dark theme: dark to light) ─────────────
+     100–300 are hover and selected backgrounds; 500–700 are quiet text. */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  /* ── Accent shades ─────────────────────────────────────────────────────
+     100–300: tints (highlighted passages, hover, selection);
+     600–900: deeper versions for text and links on the page. */
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --font-body: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  --font-heading: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  --font-heading-weight: 800;
+  --font-mono: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+
+  /* ── Shape ─────────────────────────────────────────────────────────────── */
+  --radius-sm: 0px; /* buttons, rows, chips */
+  --radius: 0px; /* menus, callouts, image blocks, cards */
+  --radius-lg: 0px; /* dialogs */
+  --rule-width: 2px; /* thickness of the lines and borders */
+
+  --shadow-sm: 0 1px 2px rgba(45, 43, 43, 0.14);
+  --shadow-md: 0 3px 10px rgba(45, 43, 43, 0.16);
+  --shadow-lg: 0 12px 32px rgba(45, 43, 43, 0.22);
+
+  /* ── Code in notebooks ─────────────────────────────────────────────────── */
+  --code-keyword: var(--color-accent-700);
+  --code-string: #3f6b34;
+  --code-comment: var(--color-neutral-600);
+  --code-number: var(--color-accent-800);
+  --code-name: var(--color-text);
+  --code-muted: var(--color-neutral-700);
+
+  /* ── Coloured terminal output in notebooks ─────────────────────────────── */
+  --ansi-red: #ae1800;
+  --ansi-green: #3f6b34;
+  --ansi-yellow: #8a6100;
+  --ansi-blue: #2d4f8a;
+  --ansi-magenta: #7d2b6e;
+  --ansi-cyan: #1f6b6b;
+  --ansi-black: #201e1d;
+  --ansi-white: #605d5d;
+}
+
+/* ── Going further: plain CSS ────────────────────────────────────────────
+   Every part of the app has a class you can style. Some useful ones:
+
+   .sidebar              the left column          .topbar        the bar at the top
+   .sidebar-brand        logo and name            .crumbs        breadcrumbs
+   .page-title           big page titles          .input-title   editable titles
+   .kicker               small red caps labels    .btn-primary   main buttons
+   .material-doc         a page (block editor)    .index-panel   the index on the right
+   .material-doc [data-content-type="heading"]    section headings
+   .ann-box              a region on an image     .ann-link      a linked passage
+   .callout              callout boxes            .nb-cell       a notebook cell
+   .course-card          a course on the home page
+
+   Variables can also be changed for one area only, e.g. a dark sidebar:
+
+   .sidebar {
+     --color-text: #f3f2f2;
+     --color-neutral-300: rgba(255, 255, 255, 0.14);
+     --color-neutral-700: rgba(255, 255, 255, 0.7);
+     background: #201e1d;
+     color: var(--color-text);
+   }
+*/

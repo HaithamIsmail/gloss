@@ -1,15 +1,15 @@
-import { ChevronLeft, ChevronRight, ImageUp, LoaderCircle, Maximize, Minus, Plus, Redo2, Undo2 } from "lucide-react";
+import { ImageUp, LoaderCircle, Maximize, Minus, Plus, Redo2, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type DragEvent as ReactDragEvent } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import type { Material } from "../../../shared/api";
 import type { Annotation } from "../../../shared/content";
 import { asImagePage, type ImagePageContent } from "../../../shared/pages";
 import { api, useTree } from "../../api";
 import { RegionComments } from "../../annotate/RegionComments";
 import { RegionStage } from "../../annotate/RegionStage";
+import { useFolderPosition } from "../../components/FolderNav";
 import { Backlinks } from "../../components/Backlinks";
 import { useUI } from "../../store";
-import { childrenOf } from "../../tree";
 import { isTyping, TitleInput, useContentSaver } from "./shared";
 
 const ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3, 4];
@@ -29,17 +29,9 @@ export default function ImageView({ material }: { material: Material }) {
   const { data: tree } = useTree();
   const course = tree?.courses.find((c) => c.id === material.courseId);
   const { save } = useContentSaver(material.id);
-  const navigate = useNavigate();
 
-  // Pages imported from a deck sit in a folder: previous / next slide.
-  const folder = material.parentId ? course?.materials.find((m) => m.id === material.parentId) : undefined;
-  // Page Up / Page Down step through the folder's images (its slides).
-  const siblings = folder && course ? childrenOf(course, folder.id).filter((m) => m.kind === "image") : [];
-  const index = siblings.findIndex((m) => m.id === material.id);
-  const prev = index > 0 ? siblings[index - 1] : undefined;
-  const next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : undefined;
-  const slideNav = useRef({ prev, next });
-  slideNav.current = { prev, next };
+  // Pages imported from a deck sit in a folder (moving between them: FolderNav in the top bar).
+  const { folder, index, count } = useFolderPosition(material);
 
   const [page, setPage] = useState<ImagePageContent>(() => asImagePage(material.content));
   const pageRef = useRef(page);
@@ -141,18 +133,6 @@ export default function ImageView({ material }: { material: Material }) {
         setZoom((z) => [...ZOOMS].reverse().find((v) => v < z) ?? z);
       } else if (!mod && e.key === "0") {
         setZoom(1);
-      } else if (e.key === "PageDown" || (e.altKey && e.key === "ArrowRight")) {
-        const n = slideNav.current.next;
-        if (n) {
-          e.preventDefault();
-          navigate(`/m/${n.id}`);
-        }
-      } else if (e.key === "PageUp" || (e.altKey && e.key === "ArrowLeft")) {
-        const p = slideNav.current.prev;
-        if (p) {
-          e.preventDefault();
-          navigate(`/m/${p.id}`);
-        }
       }
     };
     const onPaste = (e: ClipboardEvent) => {
@@ -231,39 +211,13 @@ export default function ImageView({ material }: { material: Material }) {
         <div className="image-page-title">
           <div className="kicker">
             {folder
-              ? [course?.code, folder.title, `${index + 1} of ${siblings.length}`].filter(Boolean).join(" · ")
+              ? [course?.code, folder.title, `${index + 1} of ${count}`].filter(Boolean).join(" · ")
               : [course?.code, course?.name, "Annotated image"].filter(Boolean).join(" · ")}
           </div>
           <TitleInput material={material} className="input-title image-title-input" />
           <Backlinks materialId={material.id} className="is-inline" />
         </div>
         <div className="image-tools">
-          {folder && (
-            <>
-              <button
-                type="button"
-                className="icon-btn"
-                title="Previous (Page Up)"
-                disabled={!prev}
-                onClick={() => prev && navigate(`/m/${prev.id}`)}
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <span className="slide-pos tabular">
-                {index + 1}/{siblings.length}
-              </span>
-              <button
-                type="button"
-                className="icon-btn"
-                title="Next (Page Down)"
-                disabled={!next}
-                onClick={() => next && navigate(`/m/${next.id}`)}
-              >
-                <ChevronRight size={17} />
-              </button>
-              <span className="tool-sep" />
-            </>
-          )}
           <button type="button" className="icon-btn" title="Undo (Ctrl+Z)" disabled={!h.past.length} onClick={() => step("undo")}>
             <Undo2 size={16} />
           </button>

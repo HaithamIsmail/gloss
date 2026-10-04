@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Annotation } from "../../shared/content";
 import { useUI } from "../store";
+import { CommentText } from "./CommentText";
 
 export const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
@@ -63,8 +64,15 @@ export function RegionComments({
             {editing === a.id ? (
               <CommentEditor initial={a.comment} onCommit={(c) => onComment(a.id, c)} onDone={() => onEdit(null)} />
             ) : (
-              <div className={`ann-comment-text${a.comment ? "" : " is-empty"}`} onClick={() => onEdit(a.id)}>
-                {a.comment || "Add a comment…"}
+              <div
+                className={`ann-comment-text${a.comment ? "" : " is-empty"}`}
+                title={a.comment ? "Click to edit (Markdown and $math$ work)" : undefined}
+                onClick={(e) => {
+                  // Links in a comment open; a click anywhere else edits it.
+                  if (!(e.target as Element).closest("a")) onEdit(a.id);
+                }}
+              >
+                {a.comment ? <CommentText text={a.comment} /> : "Add a comment…"}
               </div>
             )}
             <div className="ann-comment-actions">
@@ -127,7 +135,7 @@ function CommentEditor({
       className="ann-comment-input"
       rows={2}
       value={value}
-      placeholder="Comment on this region…"
+      placeholder="Comment on this region… (Markdown and $math$ work)"
       onChange={(e) => {
         setValue(e.target.value);
         autosize(e.target);

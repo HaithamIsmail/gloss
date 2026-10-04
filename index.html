@@ -8,6 +8,28 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Gloss</title>
+    <script>
+      // Apply the chosen theme before the first paint (cached by src/theme/theme.ts).
+      (function () {
+        try {
+          var t = JSON.parse(localStorage.getItem("gloss-theme") || "null");
+          if (!t || !t.css || (location.pathname.indexOf("/print/") === 0 && t.scheme === "dark")) return;
+          var sheet = new CSSStyleSheet();
+          sheet.replaceSync(t.css);
+          var links = (t.imports || []).map(function (href) {
+            var l = document.createElement("link");
+            l.rel = "stylesheet";
+            l.href = href;
+            document.head.appendChild(l);
+            return l;
+          });
+          document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sheet]);
+          window.__glossTheme = { sheet: sheet, links: links };
+          document.documentElement.dataset.theme = t.id;
+          document.documentElement.dataset.scheme = t.scheme;
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

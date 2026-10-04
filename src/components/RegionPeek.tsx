@@ -1,6 +1,7 @@
 import { useLayoutEffect, useState } from "react";
 import { blockElement } from "../editor/links";
 import { useUI } from "../store";
+import { CommentText } from "../annotate/CommentText";
 
 const WIDTH = 300;
 const GAP = 10;
@@ -58,7 +59,7 @@ export function RegionPeek() {
       </div>
       <div className="region-peek-body">
         <span className="ann-badge is-solid">{region.n}</span>
-        <span>{region.comment || "No comment yet"}</span>
+        {region.comment ? <CommentText text={region.comment} /> : <span>No comment yet</span>}
       </div>
     </div>
   );

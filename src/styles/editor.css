@@ -456,7 +456,7 @@
 .ann-box {
   position: absolute;
   border: 2px solid var(--color-accent);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-paper) 85%, transparent);
   cursor: move;
   transition: background-color 0.12s, opacity 0.12s, border-width 0.12s;
 }
@@ -476,7 +476,7 @@
   left: -2px;
   top: -2px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font: 800 11px/1 var(--font-body);
   padding: 4px 6px;
   pointer-events: none;
@@ -594,7 +594,7 @@
 .ann-comment.is-active .ann-badge,
 .ann-badge.is-solid {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .ann-comment-main {
@@ -660,7 +660,7 @@
 
 .ann-link-btn.is-on {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .ann-passages {
@@ -732,7 +732,7 @@
 .drawing-block-body {
   display: flex;
   justify-content: center;
-  background: #fff;
+  background: var(--color-image-bg);
 }
 
 .drawing-block-body img {
@@ -753,4 +753,68 @@
   padding: 24px 14px;
   color: var(--color-neutral-700);
   background: var(--color-surface);
+}
+
+/* Region comments are Markdown with $math$: keep them compact. */
+.md-comment {
+  white-space: normal;
+}
+
+.md-comment > :first-child {
+  margin-top: 0;
+}
+
+.md-comment > :last-child {
+  margin-bottom: 0;
+}
+
+.md-comment :is(p, ul, ol, pre, blockquote, table) {
+  margin: 0 0 0.45em;
+}
+
+.md-comment :is(ul, ol) {
+  padding-left: 1.3em;
+}
+
+.md-comment :is(h1, h2, h3, h4) {
+  margin: 0.3em 0 0.25em;
+  font-size: 1em;
+  font-weight: 800;
+}
+
+.md-comment code {
+  padding: 0 3px;
+  background: var(--color-surface);
+  font: 0.9em var(--font-mono);
+}
+
+.md-comment pre {
+  padding: 6px 8px;
+  overflow-x: auto;
+  background: var(--color-surface);
+}
+
+.md-comment pre code {
+  padding: 0;
+  background: none;
+}
+
+.md-comment blockquote {
+  padding-left: 8px;
+  border-left: 3px solid var(--color-neutral-400);
+  color: var(--color-neutral-700);
+}
+
+.md-comment .katex {
+  font-size: 1.05em;
+}
+
+.md-comment .katex-display {
+  margin: 0.3em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.md-comment img {
+  max-width: 100%;
 }

@@ -1,0 +1,96 @@
+/* Theme hooks: where the type and shape variables apply across the app.
+   With the default values (Archivo, square corners) they change nothing; a
+   theme only has to set the variables. Loaded after the other stylesheets. */
+
+/* ── Headings use the heading font ─────────────────────────────────────── */
+
+:is(
+    .page-title,
+    .input-title,
+    .brand-name,
+    .course-card-name,
+    .course-card-new,
+    .section-head-title,
+    .tour-title,
+    .print-head h1,
+    .print-material > h2,
+    .print-folder,
+    .static-doc :is(h2, h3, h4),
+    .nb-markdown :is(h1, h2, h3),
+    .history-head strong,
+    .export-card strong
+  ) {
+  font-family: var(--font-heading);
+}
+
+:is(.page-title, .input-title, .brand-name, .course-card-name, .tour-title, .print-head h1),
+.material-doc [data-content-type="heading"] .bn-inline-content {
+  font-weight: var(--font-heading-weight);
+}
+
+/* ── Rounded corners (all 0 by default) ────────────────────────────────── */
+
+:is(
+    .btn-primary,
+    .btn-secondary,
+    .icon-btn,
+    .side-btn,
+    .tree-row,
+    .tree-toggle,
+    .tree-action,
+    .menu-item,
+    .new-menu-item,
+    .move-option,
+    .history-item,
+    .search-result,
+    .toast-action,
+    .toast-close,
+    .tour-close,
+    .block-btn,
+    .ann-link-btn,
+    .zoom-label,
+    .select,
+    .pill,
+    .mention,
+    .material-item,
+    .backlink,
+    .nb-add-end button,
+    .slide-regions,
+    kbd
+  ) {
+  border-radius: var(--radius-sm);
+}
+
+:is(
+    .menu-pop,
+    .new-menu,
+    .math-pop,
+    .toast,
+    .callout,
+    .ann-block,
+    .drawing-block,
+    .slide-thumb,
+    .math-display,
+    .math-source,
+    .static-figure-img,
+    .static-code,
+    .region-peek,
+    .export-card,
+    .linking-banner,
+    .history-preview-bar
+  ) {
+  border-radius: var(--radius);
+}
+
+:is(.search-panel, .history-panel, .tour-pop, .drawing-modal-panel) {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* The block editor's own menus and toolbars follow the same radius. */
+.bn-container {
+  --bn-border-radius: var(--radius) !important;
+}
+
+/* ── Rule weight ───────────────────────────────────────────────────────── */
+/* --rule and --rule-ink are built from --rule-width (see tokens.css). */

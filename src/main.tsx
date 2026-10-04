@@ -4,6 +4,7 @@ import "./styles/tokens.css";
 import "./styles/app.css";
 import "./styles/editor.css";
 import "./styles/features.css";
+import "./styles/theme-hooks.css";
 import "./styles/tour.css";
 
 import { QueryClientProvider } from "@tanstack/react-query";

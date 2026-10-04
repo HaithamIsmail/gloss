@@ -1,12 +1,24 @@
 /* Modernist design-system tokens (from design/_ds/modernist…/styles.css).
-   Flat, architectural, Archivo throughout, one red accent, 0 radius, 2px rules. */
+   Flat, architectural, Archivo throughout, one red accent, 0 radius, 2px rules.
+
+   These variables are the theme API: a theme (themes/*.css, data/themes/*.css)
+   overrides them in its own :root block. See themes/_template.css. */
 
 :root {
+  color-scheme: light;
+
   --color-bg: #f3f2f2;
   --color-surface: #eae9e9;
+  --color-paper: #ffffff;
   --color-text: #201e1d;
   --color-accent: #ec3013;
-  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+  --color-on-accent: #ffffff;
+  --color-success: #3f8a46;
+  --color-image-bg: #ffffff;
+  --color-divider: color-mix(in srgb, var(--color-text) 40%, transparent);
+
+  --page-background: var(--color-bg);
+  --sidebar-background: var(--color-surface);
 
   --color-neutral-100: #f8f4f4;
   --color-neutral-200: #eae7e7;
@@ -40,13 +52,34 @@
   --space-6: 24px;
   --space-8: 32px;
 
+  --radius-sm: 0px;
   --radius: 0px;
-  --rule: 2px solid var(--color-divider);
-  --rule-ink: 2px solid var(--color-text);
+  --radius-lg: 0px;
+  --rule-width: 2px;
+  --rule: var(--rule-width) solid var(--color-divider);
+  --rule-ink: var(--rule-width) solid var(--color-text);
 
   --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
   --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
   --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+
+  /* Code in notebooks */
+  --code-keyword: var(--color-accent-700);
+  --code-string: #3f6b34;
+  --code-comment: var(--color-neutral-600);
+  --code-number: var(--color-accent-800);
+  --code-name: var(--color-text);
+  --code-muted: var(--color-neutral-700);
+
+  /* Coloured terminal output in notebooks */
+  --ansi-red: #ae1800;
+  --ansi-green: #3f6b34;
+  --ansi-yellow: #8a6100;
+  --ansi-blue: #2d4f8a;
+  --ansi-magenta: #7d2b6e;
+  --ansi-cyan: #1f6b6b;
+  --ansi-black: #201e1d;
+  --ansi-white: #605d5d;
 
   --sidebar-w: 264px;
   --topbar-h: 48px;
@@ -66,7 +99,7 @@ body,
 }
 
 body {
-  background: var(--color-bg);
+  background: var(--page-background);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: 15px;

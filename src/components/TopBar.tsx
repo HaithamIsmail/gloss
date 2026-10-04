@@ -4,6 +4,7 @@ import { useMatch, useNavigate } from "react-router";
 import type { MaterialSummary } from "../../shared/api";
 import { useDeleteMaterial, useDrawings, useTree } from "../api";
 import { flushAll } from "../flush";
+import { FolderNav } from "./FolderNav";
 import { download } from "../format";
 import { useUI, type Prefs } from "../store";
 import { APP_NAME } from "./Logo";
@@ -17,6 +18,7 @@ export function TopBar() {
   const drawingMatch = useMatch("/canvas/:drawingId");
   const trashMatch = useMatch("/trash");
   const backupsMatch = useMatch("/backups");
+  const settingsMatch = useMatch("/settings/*");
   const { data: drawings } = useDrawings();
   const save = useUI((s) => s.save);
   const sidebarOpen = useUI((s) => s.sidebarOpen);
@@ -37,9 +39,10 @@ export function TopBar() {
     const d = drawings?.find((x) => x.id === drawingMatch?.params.drawingId);
     if (drawingMatch) crumbs.push({ label: d?.title || "Untitled drawing", onClick: () => {}, current: true });
   }
-  if (trashMatch || backupsMatch) {
+  if (trashMatch || backupsMatch || settingsMatch) {
     crumbs[0].current = false;
-    crumbs.push({ label: trashMatch ? "Trash" : "Backups and export", onClick: () => {}, current: true });
+    const label = trashMatch ? "Trash" : backupsMatch ? "Backups and export" : "Settings";
+    crumbs.push({ label, onClick: () => {}, current: true });
   }
   if (course) {
     crumbs.push({ label: course.name || "Untitled course", onClick: () => navigate(`/c/${course.id}`), current: !material });
@@ -81,6 +84,7 @@ export function TopBar() {
         ))}
       </nav>
       <div className="topbar-right">
+        {material?.parentId && <FolderNav material={material} />}
         {(materialId || drawingMatch) && <SaveStatus state={save} />}
         {materialId && <ViewMenu />}
         {material && <PageMenu material={material} />}

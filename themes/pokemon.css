@@ -1,0 +1,248 @@
+/*
+ * @name        Pokémon
+ * @author      Gloss
+ * @description Pokédex red, Poké Ball buttons, pixel headings and game text boxes. A fan theme inspired by the games.
+ * @order       4
+ * @scheme      light
+ */
+
+/* Press Start 2P and Nunito (SIL Open Font License, see pokemon/fonts/). */
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("pokemon/fonts/press-start-2p-latin-400-normal.woff2") format("woff2");
+  font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url("pokemon/fonts/nunito-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 200 1000;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  --poke-red: #e3350d;
+  --poke-dex: #d60f2b;
+  --poke-yellow: #ffcb05;
+  --poke-blue: #2a75bb;
+  --poke-ink: #1d2433;
+
+  --color-bg: #eef3f9;
+  --color-surface: #e3eaf3;
+  --color-paper: #ffffff;
+  --color-text: var(--poke-ink);
+  --color-accent: var(--poke-red);
+  --color-on-accent: #ffffff;
+  --color-success: #3bb273;
+  --color-image-bg: #ffffff;
+  --color-divider: rgba(29, 36, 51, 0.28);
+
+  --page-background: radial-gradient(rgba(42, 117, 187, 0.13) 1.2px, transparent 1.6px) 0 0 / 18px 18px, var(--color-bg);
+  --sidebar-background: linear-gradient(180deg, #e8203a 0%, var(--poke-dex) 60%, #b50c24 100%);
+
+  --color-neutral-100: #f6f8fb;
+  --color-neutral-200: #e9edf3;
+  --color-neutral-300: #d5dce6;
+  --color-neutral-400: #b5bfcd;
+  --color-neutral-500: #8f9bab;
+  --color-neutral-600: #6d7889;
+  --color-neutral-700: #525c6b;
+  --color-neutral-800: #39414d;
+  --color-neutral-900: #252b34;
+
+  --color-accent-100: #fdeeea;
+  --color-accent-200: #fde9a8; /* tints are Pikachu yellow: highlighted passages, hover */
+  --color-accent-300: #ffdb5c;
+  --color-accent-400: #f08a73;
+  --color-accent-500: #e85438;
+  --color-accent-600: #c92b0b;
+  --color-accent-700: #b22508;
+  --color-accent-800: #7a1a08;
+  --color-accent-900: #521206;
+
+  --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-heading: "Press Start 2P", "Courier New", monospace;
+  --font-heading-weight: 400;
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --rule-width: 3px;
+
+  --shadow-sm: 0 2px 0 rgba(29, 36, 51, 0.25);
+  --shadow-md: 0 4px 0 var(--poke-ink);
+  --shadow-lg: 0 6px 0 var(--poke-ink), 0 18px 40px rgba(29, 36, 51, 0.25);
+
+  --code-keyword: #c92b0b;
+  --code-string: #2f8f5b;
+  --code-comment: #8f9bab;
+  --code-number: var(--poke-blue);
+  --code-name: var(--poke-ink);
+  --code-muted: #525c6b;
+}
+
+body {
+  font-size: 15.5px;
+}
+
+/* ── Pixel headings, sized for a pixel font ──────────────────────────── */
+.page-title,
+.input-title {
+  font-size: 25px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.material-doc [data-content-type="heading"] {
+  --level: 19px;
+  --prev-level: 19px;
+  letter-spacing: 0;
+}
+.material-doc [data-content-type="heading"][data-level="2"] {
+  --level: 14px;
+  --prev-level: 14px;
+}
+.material-doc [data-content-type="heading"][data-level="3"] {
+  --level: 11px;
+  --prev-level: 11px;
+}
+.material-doc [data-content-type="heading"] .bn-inline-content,
+.material-doc[data-numbering="on"] [data-content-type="heading"]::before {
+  line-height: 1.6;
+}
+
+.kicker {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--poke-blue);
+}
+
+.course-card-name {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── The Pokédex: a red sidebar with white text ──────────────────────── */
+.sidebar {
+  --color-text: #ffffff;
+  --color-divider: rgba(0, 0, 0, 0.25);
+  --color-neutral-300: rgba(255, 255, 255, 0.2);
+  --color-neutral-400: rgba(255, 255, 255, 0.3);
+  --color-neutral-500: rgba(255, 255, 255, 0.6);
+  --color-neutral-600: rgba(255, 255, 255, 0.7);
+  --color-neutral-700: rgba(255, 255, 255, 0.82);
+  --color-neutral-800: rgba(255, 255, 255, 0.9);
+  --color-accent-700: var(--poke-yellow);
+  color: #ffffff;
+  border-right: 4px solid var(--poke-ink);
+}
+
+.sidebar .material-row.is-active {
+  background: var(--poke-yellow);
+  color: var(--poke-ink);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.sidebar kbd {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+.sidebar-brand {
+  border-bottom: 4px solid var(--poke-ink);
+}
+
+/* The Poké Ball next to the name. */
+.sidebar-brand::after {
+  content: "";
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  border: 2.5px solid var(--poke-ink);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff 0 3px, var(--poke-ink) 3.5px 5.5px, transparent 6px),
+    linear-gradient(180deg, var(--poke-red) 0 44%, var(--poke-ink) 44% 56%, #fff 56%);
+}
+
+.sidebar-brand svg {
+  border-radius: 6px;
+  outline: 2px solid var(--poke-ink);
+}
+
+.brand-name {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 var(--poke-ink);
+}
+
+.sidebar-bottom {
+  border-top: 3px solid rgba(0, 0, 0, 0.25);
+}
+
+/* ── Chunky game buttons ─────────────────────────────────────────────── */
+.btn-primary,
+.btn-secondary {
+  border: 3px solid var(--poke-ink);
+  box-shadow: 0 3px 0 var(--poke-ink);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--poke-ink);
+}
+
+.btn-secondary {
+  background: #ffffff;
+}
+
+.btn-secondary:hover {
+  background: var(--poke-yellow);
+}
+
+/* Cards with a hard shadow, like the games' menus. */
+.course-card:hover,
+.slide-card:hover .slide-thumb {
+  box-shadow: 0 4px 0 var(--poke-ink);
+}
+
+/* ── Game text boxes ─────────────────────────────────────────────────── */
+.toast,
+.tour-pop {
+  background: #ffffff;
+  color: var(--poke-ink);
+  border: 4px solid var(--poke-ink);
+  box-shadow:
+    inset 0 0 0 3px #ffffff,
+    inset 0 0 0 5px var(--poke-blue),
+    0 6px 0 var(--poke-ink);
+}
+
+.toast-action {
+  color: var(--poke-red);
+}
+
+.toast-close {
+  color: var(--color-neutral-600);
+}
+
+.tour-pop {
+  border-top-width: 4px;
+}
+
+.callout {
+  border: 3px solid var(--poke-ink);
+  background: #fffbe6;
+}
+
+.ann-box {
+  border-radius: 6px;
+}

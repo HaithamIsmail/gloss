@@ -1,0 +1,11 @@
+/*
+ * @name        Modernist
+ * @author      Gloss
+ * @description The default: flat and architectural, Archivo throughout, one red accent, square corners, 2px rules.
+ * @order       1
+ * @scheme      light
+ */
+
+/* Modernist is the app's own look (src/styles/tokens.css), so this file is
+   empty on purpose. Start your own theme from themes/_template.css, or use
+   "Duplicate" on any theme in Settings → Themes. */

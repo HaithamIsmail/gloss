@@ -15,6 +15,16 @@ import { BACKUP_DIR, backupFile, backupNow, backupOnStart, listBackups } from ".
 import { exportAll, exportCourse, exportMaterial, type ZipStream } from "./export";
 import { search } from "./search";
 import { isLocalUpgrade, localOnly } from "./security";
+import {
+  BUILTIN_THEMES,
+  createTheme,
+  duplicateTheme,
+  listThemes,
+  openThemesFolder,
+  removeTheme,
+  setCurrentTheme,
+  USER_THEMES,
+} from "./themes";
 import { seedIfEmpty } from "./seed";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -189,6 +199,34 @@ api.delete("/trash", (_req, res) => {
   res.sendStatus(204);
 });
 
+// ── Themes ───────────────────────────────────────────────────────────────
+api.get("/themes", (_req, res) => {
+  res.json(listThemes());
+});
+
+api.put("/themes/current", (req, res) => {
+  res.json(setCurrentTheme(String(req.body?.id ?? "")));
+});
+
+/** A new theme in data/themes: from the template, or from uploaded CSS ({ css, fileName }). */
+api.post("/themes", (req, res) => {
+  const { name, css, fileName } = req.body ?? {};
+  res.status(201).json(createTheme({ name, css: typeof css === "string" ? css : undefined, fileName }));
+});
+
+api.post("/themes/duplicate", (req, res) => {
+  res.status(201).json(duplicateTheme(String(req.body?.id ?? "")));
+});
+
+api.delete("/themes", (req, res) => {
+  res.json(removeTheme(String(req.query.id ?? "")));
+});
+
+api.post("/themes/open-folder", (_req, res) => {
+  openThemesFolder();
+  res.sendStatus(204);
+});
+
 // ── Backups and exports ──────────────────────────────────────────────────
 api.get("/backups", (_req, res) => {
   res.json(listBackups());
@@ -301,6 +339,11 @@ api.post("/envs/install-ipykernel", async (req, res, next) => {
 app.use("/api", api);
 app.use("/uploads", express.static(UPLOAD_DIR, { maxAge: "30d", immutable: true }));
 
+// Theme stylesheets and their fonts/images. Links carry ?v=<mtime>, and edits to
+// your own themes must show up at once, so they are revalidated every time.
+app.use("/themes/builtin", express.static(BUILTIN_THEMES, { maxAge: "1h" }));
+app.use("/themes/user", express.static(USER_THEMES, { cacheControl: true, maxAge: 0 }));
+
 // Excalidraw's hand-drawn fonts, served locally so drawing works offline
 // (the client points window.EXCALIDRAW_ASSET_PATH here).
 const excalidrawFonts = fileURLToPath(
@@ -323,7 +366,7 @@ if (isProd) {
   const dist = path.resolve("dist");
   if (fs.existsSync(dist)) {
     app.use(express.static(dist));
-    app.get(/^(?!\/(api|uploads|excalidraw-assets|pyodide|pdfjs)\/).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
+    app.get(/^(?!\/(api|uploads|themes|excalidraw-assets|pyodide|pdfjs)\/).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
   }
 }
 

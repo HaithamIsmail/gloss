@@ -105,3 +105,20 @@ export type LinkTarget = {
 };
 
 export type BackupInfo = { name: string; size: number; createdAt: number };
+
+// ── Themes ───────────────────────────────────────────────────────────────
+
+export type ThemeInfo = {
+  /** "builtin/washi" or "user/my-theme". */
+  id: string;
+  name: string;
+  author: string;
+  description: string;
+  scheme: "light" | "dark";
+  source: "builtin" | "user";
+  /** The theme's stylesheet (changes when the file changes). */
+  href: string;
+  updatedAt: number;
+};
+
+export type ThemeList = { current: string; themes: ThemeInfo[]; folder: string };

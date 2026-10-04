@@ -16,6 +16,7 @@ import {
   type MentionProps,
 } from "../../shared/content";
 import { asImagePage, asNotebook } from "../../shared/pages";
+import { CommentText } from "../annotate/CommentText";
 import { mathHtml } from "../math";
 import { Outputs } from "../notebook/Outputs";
 import { renderMarkdown } from "../notebook/render";
@@ -58,7 +59,7 @@ export function StaticRegions({
       {annotations.length > 0 && (
         <ol className="static-comments" start={startAt}>
           {annotations.map((a) => (
-            <li key={a.id}>{a.comment || <em className="muted">No comment</em>}</li>
+            <li key={a.id}>{a.comment ? <CommentText text={a.comment} /> : <em className="muted">No comment</em>}</li>
           ))}
         </ol>
       )}
