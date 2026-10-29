@@ -48,7 +48,7 @@ export function SlideImportHost() {
 
   return (
     <div className="search-backdrop">
-      <div className="search-panel import-panel" role="dialog" aria-label="Importing slides">
+      <div className="search-panel import-panel" role="dialog" aria-label="Importing">
         <div className="picker-head">
           <span className="section-head-title">{job.error ? "Import failed" : "Importing"}</span>
         </div>

@@ -179,13 +179,19 @@ Type `@` to link another material:
 
 - the menu lists **Pages** (any material: pages, images, notebooks, folders, slides) from every course, most recently
   edited first, with their *Course / Folder* path;
-- type to search; matching **Regions** of images (found by their comment) are listed too;
+- type to search; matching **Regions** of images (found by their comment) and **Book highlights** (found by their
+  text or note) are listed too;
+- end with a page number (`@geron 50`, `@hands-on p. 50`, or just `@page 50`) and **Book pages** lists that page of
+  every PDF book whose title or author matches;
 - `↑` `↓` `Enter` or click to insert the link.
 
 A link shows as a chip with the material's icon and its **current title** (renaming the target updates every link).
-A region link shows its comment and *in Page title*.
+A region link shows its comment and *in Page title*; a highlight link shows the highlighted words and *in Book title*;
+a book page link shows *p. 50 in Book title*.
 
-- **Click** a link to open the material. A region link opens the page and lights up that region for a moment.
+- **Click** a link to open the material. A region link opens the page and lights up that region for a moment. A
+  link to a book, a highlight or a book page opens the book **in a new tab**, at that passage or page — see
+  [the library](library.md#linking-to-a-highlight).
 - `Ctrl`/`⌘`/`Shift`-click or middle-click opens it the browser's way (new tab or window).
 - If the target was deleted, the link is struck through: *This material was deleted or moved to the trash.* Restore it
   from the Trash and the link works again.

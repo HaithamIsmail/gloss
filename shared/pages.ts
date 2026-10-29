@@ -7,9 +7,9 @@ import {
   type OutlineItem,
 } from "./content";
 
-export type MaterialKind = "doc" | "image" | "notebook" | "folder";
+export type MaterialKind = "doc" | "image" | "notebook" | "folder" | "book";
 
-export const MATERIAL_KINDS: MaterialKind[] = ["doc", "image", "notebook", "folder"];
+export const MATERIAL_KINDS: MaterialKind[] = ["doc", "image", "notebook", "folder", "book"];
 
 export const isMaterialKind = (v: unknown): v is MaterialKind =>
   typeof v === "string" && (MATERIAL_KINDS as string[]).includes(v);
@@ -186,12 +186,144 @@ export function notebookOutline(nb: NotebookContent): OutlineItem[] {
   return out;
 }
 
+// ── Book (a PDF or EPUB kept as it is, read in the app) ─────────────────
+
+export type BookFormat = "pdf" | "epub";
+
+/** Where a highlight sits in a PDF: a page, and rectangles in fractions (0–1) of their page. */
+export type PdfLoc = { kind: "pdf"; page: number; rects: { p: number; x: number; y: number; w: number; h: number }[] };
+
+/** Where a highlight sits in an EPUB: an EPUB CFI (Canonical Fragment Identifier) range. */
+export type EpubLoc = { kind: "epub"; cfi: string };
+
+export type BookLoc = PdfLoc | EpubLoc;
+
+export type BookHighlight = {
+  id: string;
+  loc: BookLoc;
+  /** The highlighted text, kept so a link still means something if the file changes. */
+  quote: string;
+  /** Your note on the passage (shown in the panel and searchable). */
+  note: string;
+  /** Position in the book, 0–1, for ordering. */
+  at: number;
+  createdAt: number;
+};
+
+export type BookStatus = "unread" | "reading" | "done";
+
+export type BookProgress = {
+  /** Where you stopped: a PDF page or an EPUB CFI. */
+  loc: BookLoc | null;
+  /** 0–1 */
+  fraction: number;
+  /** "p. 42 / 310" or the chapter title, for the library. */
+  label?: string;
+  updatedAt: number;
+};
+
+export type BookMeta = {
+  authors: string;
+  year?: string;
+  publisher?: string;
+  description?: string;
+  tags: string[];
+};
+
+export type BookContent = {
+  file: { url: string; name: string; format: BookFormat; size: number };
+  /** Metadata read from the file (editable afterwards). */
+  meta: BookMeta;
+  coverUrl: string | null;
+  /** PDF pages, or EPUB sections. */
+  length: number;
+  status: BookStatus;
+  progress: BookProgress;
+  highlights: BookHighlight[];
+};
+
+export const BOOK_STATUS_LABEL: Record<BookStatus, string> = { unread: "To read", reading: "Reading", done: "Finished" };
+
+export function asBookLoc(raw: unknown): BookLoc | null {
+  const o = raw as { kind?: string; page?: unknown; rects?: unknown; cfi?: unknown } | null;
+  if (!o || typeof o !== "object") return null;
+  if (o.kind === "pdf" && typeof o.page === "number") {
+    return { kind: "pdf", page: o.page, rects: Array.isArray(o.rects) ? (o.rects as PdfLoc["rects"]) : [] };
+  }
+  if (o.kind === "epub" && typeof o.cfi === "string") return { kind: "epub", cfi: o.cfi };
+  return null;
+}
+
+const str = (v: unknown) => (typeof v === "string" ? v : "");
+
+export function asBookMeta(raw: unknown): BookMeta {
+  const m = (raw && typeof raw === "object" ? raw : {}) as Partial<BookMeta>;
+  return {
+    authors: str(m.authors),
+    ...(m.year ? { year: str(m.year) } : {}),
+    ...(m.publisher ? { publisher: str(m.publisher) } : {}),
+    ...(m.description ? { description: str(m.description) } : {}),
+    tags: Array.isArray(m.tags) ? m.tags.filter((t): t is string => typeof t === "string" && !!t) : [],
+  };
+}
+
+export function asBookHighlight(raw: unknown): BookHighlight | null {
+  const x = (raw ?? {}) as Partial<BookHighlight>;
+  const loc = asBookLoc(x.loc);
+  if (!x.id || typeof x.id !== "string" || !loc) return null;
+  return {
+    id: x.id,
+    loc,
+    quote: str(x.quote),
+    note: str(x.note),
+    at: typeof x.at === "number" ? Math.min(1, Math.max(0, x.at)) : 0,
+    createdAt: typeof x.createdAt === "number" ? x.createdAt : 0,
+  };
+}
+
+export function asBook(raw: unknown): BookContent {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Partial<BookContent>;
+  const file = (o.file ?? {}) as Partial<BookContent["file"]>;
+  const progress = (o.progress ?? {}) as Partial<BookProgress>;
+  return {
+    file: {
+      url: str(file.url),
+      name: str(file.name),
+      format: file.format === "epub" ? "epub" : "pdf",
+      size: typeof file.size === "number" ? file.size : 0,
+    },
+    meta: asBookMeta(o.meta),
+    coverUrl: typeof o.coverUrl === "string" && o.coverUrl ? o.coverUrl : null,
+    length: typeof o.length === "number" ? o.length : 0,
+    status: o.status === "reading" || o.status === "done" ? o.status : "unread",
+    progress: {
+      loc: asBookLoc(progress.loc),
+      fraction: typeof progress.fraction === "number" ? Math.min(1, Math.max(0, progress.fraction)) : 0,
+      ...(progress.label ? { label: str(progress.label) } : {}),
+      updatedAt: typeof progress.updatedAt === "number" ? progress.updatedAt : 0,
+    },
+    highlights: (Array.isArray(o.highlights) ? o.highlights : [])
+      .map(asBookHighlight)
+      .filter((h): h is BookHighlight => !!h)
+      .sort((a, b) => a.at - b.at || a.createdAt - b.createdAt),
+  };
+}
+
+/** "p. 42 / 310", the chapter, or "32%": where you are in a book. */
+export function bookProgressLabel(b: BookContent): string {
+  const p = b.progress;
+  if (p.loc?.kind === "pdf" && b.length) return `p. ${p.loc.page} / ${b.length}`;
+  if (p.label) return p.label;
+  return `${Math.round(p.fraction * 100)}%`;
+}
+
 // ── Per-kind helpers ─────────────────────────────────────────────────────
 
 export function defaultContentFor(kind: MaterialKind, newId: () => string): unknown {
   if (kind === "image") return { url: "", name: "", annotations: [] } satisfies ImagePageContent;
   if (kind === "folder") return {} satisfies FolderContent;
   if (kind === "notebook") return emptyNotebook();
+  if (kind === "book") return asBook({});
   return [
     { id: newId(), type: "heading", props: { level: 1 }, content: "Introduction", children: [] },
     { id: newId(), type: "paragraph", content: "", children: [] },
@@ -200,12 +332,14 @@ export function defaultContentFor(kind: MaterialKind, newId: () => string): unkn
 
 export function outlineFor(kind: MaterialKind, content: unknown): OutlineItem[] {
   if (kind === "notebook") return notebookOutline(asNotebook(content));
-  if (kind === "image" || kind === "folder") return [];
+  if (kind === "image" || kind === "folder" || kind === "book") return [];
   return buildOutline(Array.isArray(content) ? (content as LooseBlock[]) : []);
 }
 
+/** Regions on an image page or in a page's images; highlights in a book. */
 export function regionsFor(kind: MaterialKind, content: unknown): number {
   if (kind === "image") return asImagePage(content).annotations.length;
+  if (kind === "book") return asBook(content).highlights.length;
   if (kind === "notebook" || kind === "folder") return 0;
   return countRegions(Array.isArray(content) ? (content as LooseBlock[]) : []);
 }
@@ -215,5 +349,6 @@ export function normalizeContent(kind: MaterialKind, content: unknown): unknown 
   if (kind === "notebook") return asNotebook(content);
   if (kind === "image") return asImagePage(content);
   if (kind === "folder") return asFolder(content);
+  if (kind === "book") return asBook(content);
   return content;
 }

@@ -24,7 +24,7 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS materials (
     id          TEXT PRIMARY KEY,
-    course_id   TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    course_id   TEXT REFERENCES courses(id) ON DELETE CASCADE,
     title       TEXT NOT NULL DEFAULT '',
     content     TEXT NOT NULL DEFAULT '[]',
     outline     TEXT NOT NULL DEFAULT '[]',
@@ -78,6 +78,54 @@ for (const table of ["courses", "materials", "drawings"]) {
   const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
   if (!cols.some((c) => c.name === "deleted_at")) {
     db.exec(`ALTER TABLE ${table} ADD COLUMN deleted_at INTEGER; ALTER TABLE ${table} ADD COLUMN trash_id TEXT;`);
+  }
+}
+
+// Migration: a book can live outside any course (course_id NULL). SQLite can't drop a
+// NOT NULL, so the table is rebuilt once, after a copy of the database is put aside.
+{
+  const col = (db.prepare(`PRAGMA table_info(materials)`).all() as { name: string; notnull: number }[]).find(
+    (c) => c.name === "course_id",
+  );
+  if (col?.notnull) {
+    const rows = (db.prepare(`SELECT COUNT(*) AS n FROM materials`).get() as { n: number }).n;
+    if (rows > 0) {
+      const dir = path.join(DATA_DIR, "backups");
+      fs.mkdirSync(dir, { recursive: true });
+      const file = path.join(dir, `gloss-before-library-${Date.now()}.db`);
+      db.exec(`VACUUM INTO '${file.replace(/'/g, "''")}'`);
+    }
+    db.exec(`PRAGMA foreign_keys = OFF`);
+    db.exec(`BEGIN`);
+    try {
+      db.exec(`
+        CREATE TABLE materials_new (
+          id          TEXT PRIMARY KEY,
+          course_id   TEXT REFERENCES courses(id) ON DELETE CASCADE,
+          parent_id   TEXT REFERENCES materials(id) ON DELETE CASCADE,
+          kind        TEXT NOT NULL DEFAULT 'doc',
+          title       TEXT NOT NULL DEFAULT '',
+          content     TEXT NOT NULL DEFAULT '[]',
+          outline     TEXT NOT NULL DEFAULT '[]',
+          regions     INTEGER NOT NULL DEFAULT 0,
+          position    REAL NOT NULL,
+          created_at  INTEGER NOT NULL,
+          updated_at  INTEGER NOT NULL,
+          deleted_at  INTEGER,
+          trash_id    TEXT
+        );
+        INSERT INTO materials_new (id, course_id, parent_id, kind, title, content, outline, regions, position, created_at, updated_at, deleted_at, trash_id)
+          SELECT id, course_id, parent_id, kind, title, content, outline, regions, position, created_at, updated_at, deleted_at, trash_id FROM materials;
+        DROP TABLE materials;
+        ALTER TABLE materials_new RENAME TO materials;
+        CREATE INDEX IF NOT EXISTS materials_course ON materials(course_id, position);
+      `);
+      db.exec(`COMMIT`);
+    } catch (err) {
+      db.exec(`ROLLBACK`);
+      throw err;
+    }
+    db.exec(`PRAGMA foreign_keys = ON`);
   }
 }
 

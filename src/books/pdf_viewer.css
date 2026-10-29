@@ -1,0 +1,4 @@
+/* pdf.js's viewer stylesheet, in a cascade layer: it ships global rules (such as
+   `.sidebar`) that would otherwise override the app's own styles once this chunk loads.
+   Unlayered app CSS always wins over a layer, whatever the specificity. */
+@import "pdfjs-dist/web/pdf_viewer.css" layer(pdfjs);

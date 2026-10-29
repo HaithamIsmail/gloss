@@ -10,7 +10,8 @@ export const topLevel = (course: Course) => course.materials.filter((m) => !m.pa
 export const childrenOf = (course: Course, folderId: string) =>
   course.materials.filter((m) => m.parentId === folderId).sort(byPosition);
 
-export function findMaterial(tree: Tree | undefined, id: string | undefined) {
+/** A material with its course and folder; a book in the library only has neither. */
+export function findMaterial(tree: Tree | undefined, id: string | undefined): { course?: Course; material?: MaterialSummary; folder?: MaterialSummary } {
   if (!tree || !id) return {};
   for (const course of tree.courses) {
     const material = course.materials.find((m) => m.id === id);
@@ -19,5 +20,6 @@ export function findMaterial(tree: Tree | undefined, id: string | undefined) {
       return { course, material, folder };
     }
   }
-  return {};
+  const material = tree.library.find((m) => m.id === id);
+  return material ? { material } : {};
 }

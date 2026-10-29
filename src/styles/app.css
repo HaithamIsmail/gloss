@@ -32,7 +32,11 @@ kbd {
   flex-direction: column;
   min-height: 0;
   background: var(--sidebar-background);
+  border: 0;
   border-right: var(--rule);
+  /* pdf.js's viewer stylesheet (loaded with a book, in a layer) also styles `.sidebar`. */
+  border-radius: 0;
+  box-shadow: none;
   transition: margin-left 0.18s ease;
 }
 

@@ -7,6 +7,7 @@ import { flushAll } from "../flush";
 import { FolderNav } from "./FolderNav";
 import { download } from "../format";
 import { useUI, type Prefs } from "../store";
+import { findMaterial } from "../tree";
 import { APP_NAME } from "./Logo";
 
 export function TopBar() {
@@ -19,35 +20,37 @@ export function TopBar() {
   const trashMatch = useMatch("/trash");
   const backupsMatch = useMatch("/backups");
   const settingsMatch = useMatch("/settings/*");
+  const libraryMatch = useMatch("/library");
   const { data: drawings } = useDrawings();
   const save = useUI((s) => s.save);
   const sidebarOpen = useUI((s) => s.sidebarOpen);
   const setSidebarOpen = useUI((s) => s.setSidebarOpen);
 
   const materialId = materialMatch?.params.materialId;
-  const course = tree?.courses.find(
-    (c) => c.id === courseMatch?.params.courseId || c.materials.some((m) => m.id === materialId),
-  );
-  const material = course?.materials.find((m) => m.id === materialId);
+  const found = findMaterial(tree, materialId);
+  const course = courseMatch ? tree?.courses.find((c) => c.id === courseMatch.params.courseId) : found.course;
+  const material = found.material;
 
   const crumbs: { label: string; onClick: () => void; current: boolean }[] = [
-    { label: "Courses", onClick: () => navigate("/"), current: !course },
+    { label: "Courses", onClick: () => navigate("/"), current: !course && !material },
   ];
+  // A book with no course lives in the library.
+  if (material && !course) crumbs.push({ label: "Library", onClick: () => navigate("/library"), current: false });
   if (canvasMatch) {
     crumbs[0].current = false;
     crumbs.push({ label: "Canvas", onClick: () => navigate("/canvas"), current: !drawingMatch });
     const d = drawings?.find((x) => x.id === drawingMatch?.params.drawingId);
     if (drawingMatch) crumbs.push({ label: d?.title || "Untitled drawing", onClick: () => {}, current: true });
   }
-  if (trashMatch || backupsMatch || settingsMatch) {
+  if (trashMatch || backupsMatch || settingsMatch || libraryMatch) {
     crumbs[0].current = false;
-    const label = trashMatch ? "Trash" : backupsMatch ? "Backups and export" : "Settings";
+    const label = trashMatch ? "Trash" : backupsMatch ? "Backups and export" : libraryMatch ? "Library" : "Settings";
     crumbs.push({ label, onClick: () => {}, current: true });
   }
   if (course) {
     crumbs.push({ label: course.name || "Untitled course", onClick: () => navigate(`/c/${course.id}`), current: !material });
   }
-  const folder = material?.parentId ? course?.materials.find((m) => m.id === material.parentId) : undefined;
+  const folder = found.folder;
   if (folder) crumbs.push({ label: folder.title || "Untitled", onClick: () => navigate(`/m/${folder.id}`), current: false });
   if (material) {
     crumbs.push({
@@ -118,7 +121,8 @@ function PageMenu({ material }: { material: MaterialSummary }) {
     setOpen(false);
     void fn();
   };
-  const isFolder = material.kind === "folder";
+  // Folders have no content of their own; a book's history is its file, not versions.
+  const isFolder = material.kind === "folder" || material.kind === "book";
 
   return (
     <div className="view-menu" ref={ref}>
@@ -168,7 +172,7 @@ function PageMenu({ material }: { material: MaterialSummary }) {
             onClick={act(async () => {
               await flushAll();
               deleteMaterial.mutate(material.id);
-              navigate(material.parentId ? `/m/${material.parentId}` : `/c/${material.courseId}`);
+              navigate(material.parentId ? `/m/${material.parentId}` : material.courseId ? `/c/${material.courseId}` : "/library");
             })}
           >
             <Trash2 size={15} /> Move to trash

@@ -8,8 +8,8 @@ import {
   walkBlocks,
   type LooseBlock,
 } from "../shared/content";
-import { asFolder, asImagePage, asNotebook, markdownHeadings, notebookOutline, headingId } from "../shared/pages";
-import { allDrawingText, allMaterialsWithContent, getTree } from "./repo";
+import { asBook, asFolder, asImagePage, asNotebook, markdownHeadings, notebookOutline, headingId } from "../shared/pages";
+import { allDrawingText, allMaterialsWithContent, getTree, whereOf } from "./repo";
 
 const LIMIT = 40;
 
@@ -50,14 +50,32 @@ export function search(raw: string): SearchResult[] {
 
   for (const m of allMaterialsWithContent()) {
     // Slides imported from a file sit in a folder: show it in the path.
-    const where = m.folderTitle ? `${m.courseName} / ${m.folderTitle}` : m.courseName;
+    const where = whereOf(m);
     const path = `${where} / ${m.title}`;
-    const base = { courseId: m.courseId, materialId: m.id };
-    if (hit(m.title)) {
-      const label = m.kind !== "folder" ? "Material" : asFolder(m.content).source ? "Slides" : "Folder";
-      out.push({ kind: "Material", label, title: m.title, path: where, ...base });
+    const base = { courseId: m.courseId ?? undefined, materialId: m.id };
+    const book = m.kind === "book" ? asBook(m.content) : null;
+    if (hit(m.title) || (book && hit(book.meta.authors))) {
+      const label = book ? "Book" : m.kind !== "folder" ? "Material" : asFolder(m.content).source ? "Slides" : "Folder";
+      const subtitle = book?.meta.authors ? `${where} · ${book.meta.authors}` : where;
+      out.push({ kind: "Material", label, title: m.title, path: subtitle, ...base });
     }
     if (m.kind === "folder") continue;
+
+    if (book) {
+      book.highlights.forEach((h, i) => {
+        const inQuote = h.quote && hit(h.quote);
+        if (!inQuote && !(h.note && hit(h.note))) return;
+        out.push({
+          kind: "Highlight",
+          label: `Highlight ${i + 1}`,
+          title: snippet(inQuote ? h.quote : h.note, q),
+          path,
+          ...base,
+          annotationId: h.id,
+        });
+      });
+      continue;
+    }
 
     if (m.kind === "image") {
       const page = asImagePage(m.content);
@@ -159,6 +177,7 @@ export function search(raw: string): SearchResult[] {
     Section: 2,
     Subsection: 3,
     Comment: 4,
+    Highlight: 4,
     Drawing: 5,
     Text: 6,
     Code: 7,

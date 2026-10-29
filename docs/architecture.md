@@ -51,7 +51,7 @@ server/
 shared/
   api.ts            Types shared by client and server
   content.ts        Reading BlockNote documents: outline, regions, mentions, text
-  pages.ts          Material kinds and their content (image pages, folders, notebooks)
+  pages.ts          Material kinds and their content (image pages, folders, notebooks, books)
   kernel.ts         Kernel protocol types
 src/
   App.tsx           Routes and the app shell
@@ -63,6 +63,8 @@ src/
   notebook/         Code editor, outputs, kernels (Pyodide worker, WebSocket), .ipynb
   drawing/          Excalidraw wrapper and the full-screen drawing dialog
   slides/           PDF/slide import (pdf.js rendering, progress dialog)
+  books/            The library: adding a book (metadata, cover), the PDF viewer (pdf.js) and
+                    the EPUB viewer (foliate-js), highlight locations
   print/            Read-only rendering for print/PDF and version previews
   tour/             First-run guided tour
   theme/            Applying the chosen theme (adopted stylesheet, first-paint cache)
@@ -70,6 +72,7 @@ src/
   pages/            Home, course, canvas, trash, backups, print, material views
   styles/           Design tokens and styles
 themes/             Built-in themes (CSS, with their fonts) and the theme template
+vendor/foliate-js/  The EPUB renderer, vendored at a pinned commit (see its README)
 docs/               This documentation
 design/             The original design prototype and design system
 public/             Logo and icons
@@ -97,7 +100,7 @@ SQLite tables (`server/db.ts`):
 | Table | Holds |
 | --- | --- |
 | `courses` | id, name, code, position, timestamps, `deleted_at`, `trash_id` |
-| `materials` | id, course, `parent_id` (folder), `kind` (doc/image/notebook/folder), title, `content` (JSON), derived `outline` and `regions`, position, timestamps, `deleted_at`, `trash_id` |
+| `materials` | id, course (`NULL` for a book in the library only), `parent_id` (folder), `kind` (doc/image/notebook/folder/book), title, `content` (JSON), derived `outline` and `regions` (highlights, for a book), position, timestamps, `deleted_at`, `trash_id` |
 | `drawings` | id, title, course, Excalidraw `scene` (JSON), SVG `preview`, searchable `text`, timestamps, `deleted_at`, `trash_id` |
 | `trash` | one row per delete: kind, item id, title, location, count of contained items, time |
 | `material_versions` | earlier contents of a material |
@@ -107,7 +110,9 @@ SQLite tables (`server/db.ts`):
 - **Soft delete:** deleting sets `deleted_at` and a shared `trash_id` on everything removed together (a course and its
   materials, a folder and its pages). All normal queries skip deleted rows. Restore clears them; purge deletes rows.
 - **Ordering:** `position` is a real number; moving between two items takes the midpoint.
-- **Migrations** run at start: missing columns are added (`ALTER TABLE … ADD COLUMN`), new tables created.
+- **Migrations** run at start: missing columns are added (`ALTER TABLE … ADD COLUMN`), new tables created. One
+  rebuilds `materials` to make `course_id` nullable (SQLite can't drop a NOT NULL); it first copies the database to
+  `data/backups/gloss-before-library-….db`.
 - IDs are nanoids.
 
 ## Content formats
@@ -118,6 +123,7 @@ SQLite tables (`server/db.ts`):
 | Image page | `{ url, name, annotations: [...], text? }` (`text` = words on an imported slide) |
 | Notebook | nbformat 4 (`cells`, `metadata`), each cell's `source` stored as one string; `metadata.study_kernel` is the chosen kernel |
 | Folder | `{ source?: { name, url, pdfUrl, type: "pdf" \| "slides" } }` |
+| Book | `{ file: { url, name, format: "pdf" \| "epub", size }, meta: { authors, year?, publisher?, description?, tags }, coverUrl, length, status: "unread" \| "reading" \| "done", progress: { loc, fraction, label?, updatedAt }, highlights: [{ id, loc, quote, note, at, createdAt }] }`. A `loc` is `{ kind: "pdf", page, rects: [{ p, x, y, w, h }] }` (fractions of the page) or `{ kind: "epub", cfi }`. |
 
 ## Key mechanisms
 
@@ -140,6 +146,17 @@ SQLite tables (`server/db.ts`):
   page over a WebSocket; one kernel per notebook, kept 15 minutes after the last client leaves.
 - **Slides.** Decks are converted to PDF on the server; the browser renders each PDF page with pdf.js to a JPEG,
   uploads it, extracts its text and title, and the server creates the folder in one transaction.
+- **Books.** The file is uploaded as it is. PDFs are shown by pdf.js's own viewer (`pdfjs-dist/web/pdf_viewer`),
+  which renders pages as they scroll into view and fetches the file with HTTP range requests (`/uploads` supports
+  them), so large files are never read whole. EPUBs are shown by foliate-js (`vendor/foliate-js`), paginated in an
+  iframe styled from the theme's variables. A highlight's location is page rectangles (PDF) or an EPUB CFI; the
+  viewers draw them (a layer per page, or foliate's overlayer) and turn a selection into one. Every change goes
+  through `POST /api/materials/:id/book`, a merge of one part (status, progress, metadata, or one highlight) onto
+  the stored content, so a book open in two tabs never loses the other's edits; progress updates skip version
+  snapshots. Highlights are the book's "regions", so `@` mentions, backlinks, search and exports reuse the region
+  paths with the highlight id as `annotationId`; a mention to a book opens in a new tab. A book may have no course
+  (`course_id NULL`): the tree lists such books in `library`, paths show "Library", and `findMaterial` (client)
+  finds them without a course.
 - **Themes.** All colours, fonts, radii and rule weights are CSS variables in `src/styles/tokens.css`;
   `theme-hooks.css` says where the type and shape variables apply. A theme file overrides them (and may add rules).
   The chosen theme's CSS is fetched, its relative `url()`s made absolute, and put in `document.adoptedStyleSheets`,
@@ -162,5 +179,6 @@ Tips:
 
 - Test against a throw-away workspace: `DATA_DIR=/tmp/gloss-test API_PORT=3002 npm run dev:api` and
   `API_PORT=3002 npx vite --port 5174`.
-- In development, the page editor is available as `window.__editor` in the browser console.
+- In development, the page editor is available as `window.__editor` in the browser console, and
+  `window.__addBook(blob, "name.pdf", courseId?)` adds a book without the file dialog (no course id: the library only).
 - Shared types and helpers go in `shared/` so client and server agree.

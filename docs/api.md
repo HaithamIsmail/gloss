@@ -23,26 +23,31 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 
 | Method & path | Body | Response |
 | --- | --- | --- |
-| `GET /api/tree` | — | `{ courses: [{ id, name, code, position, materials: MaterialSummary[] }] }` (not trashed, by position) |
+| `GET /api/tree` | — | `{ courses: [{ id, name, code, position, materials: MaterialSummary[] }], library: MaterialSummary[] }` (not trashed, by position; `library` holds the books that belong to no course) |
 | `POST /api/courses` | `{ name?, code? }` | `201` Course |
 | `PATCH /api/courses/:id` | `{ name?, code?, position? }` | Course · `404` |
 | `DELETE /api/courses/:id` | — | `{ trashId }` (course and its materials to the trash) · `404` |
 
-`MaterialSummary` = `{ id, courseId, parentId, kind, title, position, outline: [{id, level, text, num}], regions, updatedAt }`.
+`MaterialSummary` = `{ id, courseId, parentId, kind, title, position, outline: [{id, level, text, num}], regions, updatedAt }`
+(`courseId` is `null` for a book that lives in the library only).
 
 ## Materials
 
 | Method & path | Body | Response |
 | --- | --- | --- |
-| `POST /api/courses/:id/materials` | `{ title?, kind?: "doc"\|"image"\|"notebook"\|"folder", content?, parentId? }` | `201` Material · `404` · `400` (*That folder doesn't exist.*, *That folder is in another course.*, *Folders can't go inside other folders.*) |
+| `POST /api/courses/:id/materials` | `{ title?, kind?: "doc"\|"image"\|"notebook"\|"folder"\|"book", content?, parentId? }` | `201` Material · `404` · `400` (*That folder doesn't exist.*, *That folder is in another course.*, *Folders can't go inside other folders.*) |
+| `POST /api/materials` | `{ courseId?: string \| null, title?, kind?, content?, parentId? }` | `201` Material · `404` (unknown course) · `400` (*Only books can live outside a course.*) — with no `courseId`, a book in the library only |
 | `GET /api/materials/:id` | — | Material (`MaterialSummary` + `content`) · `404` |
-| `PATCH /api/materials/:id` | `{ title?, content?, position?, courseId?, parentId? }` | MaterialSummary · `400` · `404` |
+| `PATCH /api/materials/:id` | `{ title?, content?, position?, courseId?: string \| null, parentId? }` | MaterialSummary · `400` · `404` |
 | `DELETE /api/materials/:id` | — | `{ trashId }` (a folder takes its pages) · `404` |
 | `POST /api/materials/:id/append` | `{ blocks: Block[] }` | MaterialSummary (adds blocks to the end of a page) · `400` · `404` |
-| `GET /api/materials/:id/image` | — | `302` to an image page's picture · `404` |
+| `GET /api/materials/:id/image` | — | `302` to an image page's picture or a book's cover · `404` |
+| `POST /api/materials/:id/book` | `{ status?, progress?, meta?, coverUrl?, addHighlight?, updateHighlight?: { id, note }, removeHighlight?: id }` | Material (the parts given are merged onto the stored book; `progress` moves *To read* to *Reading*) · `400` · `404` |
+| `GET /api/books` | — | `[MaterialSummary + { courseName, courseCode, book: BookContent }]`, every book, newest first (`courseName` is `""` for a book with no course) |
 
-`PATCH` with `courseId` and/or `parentId` moves the material (`parentId: null` = top level); a folder moved to another
-course takes its pages. Changing `content` may store the previous content as a version.
+`PATCH` with `courseId` and/or `parentId` moves the material (`parentId: null` = top level; `courseId: null` puts a
+book in the library with no course, books only, no folder); a folder moved to another course takes its pages. Changing `content` may store the previous content as a version (a book's progress updates
+through `/book` don't).
 
 ## Versions and links
 
@@ -52,7 +57,7 @@ course takes its pages. Changing `content` may store the previous content as a v
 | `GET /api/versions/:id` | `{ id, materialId, title, createdAt, size, kind, content }` |
 | `POST /api/materials/:id/versions/:versionId/restore` | Material (the current content is kept as a version first) |
 | `GET /api/materials/:id/backlinks` | `[{ materialId, title, kind, courseName, count }]` |
-| `GET /api/link-targets?q=` | `[{ kind: "material"\|"region", materialId, materialKind, annotationId?, blockId?, n?, title, path }]` — up to 12 materials and (when `q` is given) 12 commented regions |
+| `GET /api/link-targets?q=` | `[{ kind: "material"\|"page"\|"region"\|"highlight", materialId, materialKind, annotationId?, blockId?, n?, page?, title, path }]` — up to 12 materials and (when `q` is given) 12 PDF book pages (a `q` ending in a number, e.g. `geron 50`; `annotationId` is `page:50`), 12 commented regions and 12 book highlights |
 
 ## Drawings
 
@@ -89,7 +94,7 @@ course takes its pages. Changing `content` may store the previous content as a v
 
 | Method & path | Response |
 | --- | --- |
-| `GET /api/search?q=` | up to 40 `{ kind, label, title, path, courseId?, materialId?, blockId?, annotationId?, drawingId? }` |
+| `GET /api/search?q=` | up to 40 `{ kind, label, title, path, courseId?, materialId?, blockId?, annotationId?, drawingId? }` (`kind` includes `Highlight` for book highlights, with the highlight id as `annotationId`) |
 
 ## Uploads and slide import
 
@@ -122,6 +127,11 @@ course takes its pages. Changing `content` may store the previous content as a v
 
 WebSocket messages — client → server: `{ type: "execute", id, code }`, `{ type: "interrupt" }`, `{ type: "restart" }`,
 `{ type: "input_reply", value }`. Server → client: `info`, `status`, `output`, `clear`, `input_request`, `done`.
+
+## App links
+
+Not API calls, but addresses the app understands: `/m/:id?ann=<highlight id>` opens a book at a highlight,
+`/m/:id?page=N` at a PDF page, `/m/:id?loc=<EPUB CFI>` at an EPUB location.
 
 ## Static files
 

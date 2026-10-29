@@ -60,7 +60,7 @@ export default function FolderView({ material }: { material: Material }) {
           </>
         )}
         <span className="grow" />
-        <NewMaterialMenu courseId={material.courseId} parentId={material.id} className="btn-secondary small">
+        <NewMaterialMenu courseId={material.courseId ?? ""} parentId={material.id} className="btn-secondary small">
           <Plus size={14} strokeWidth={2.4} />
           <span>Add to folder</span>
         </NewMaterialMenu>
@@ -105,6 +105,13 @@ function SlideImage({ materialId }: { materialId: string }) {
 /** A page or notebook in a folder: its kind and first sections. */
 function MaterialThumb({ m }: { m: MaterialSummary }) {
   const Icon = KIND_ICON[m.kind];
+  if (m.kind === "book") {
+    return (
+      <span className="book-thumb">
+        <img src={`/api/materials/${m.id}/image`} alt="" loading="lazy" decoding="async" />
+      </span>
+    );
+  }
   return (
     <span className="material-thumb">
       <span className="material-thumb-kind">

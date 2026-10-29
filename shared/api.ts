@@ -1,9 +1,10 @@
 import type { OutlineItem } from "./content";
-import type { MaterialKind } from "./pages";
+import type { BookContent, BookHighlight, BookMeta, BookProgress, BookStatus, MaterialKind } from "./pages";
 
 export type MaterialSummary = {
   id: string;
-  courseId: string;
+  /** The course, or null for a book that lives in the library only. */
+  courseId: string | null;
   /** The folder this material sits in (slides imported from a file), if any. */
   parentId: string | null;
   kind: MaterialKind;
@@ -22,7 +23,8 @@ export type Course = {
   materials: MaterialSummary[];
 };
 
-export type Tree = { courses: Course[] };
+/** Every course with its materials, plus the books that belong to no course. */
+export type Tree = { courses: Course[]; library: MaterialSummary[] };
 
 /** content: LooseBlock[] for "doc", ImagePageContent for "image", NotebookContent for "notebook". */
 export type Material = MaterialSummary & { content: unknown };
@@ -45,7 +47,16 @@ export type DrawingSummary = {
 
 export type Drawing = DrawingSummary & { scene: DrawingScene };
 
-export type SearchKind = "Course" | "Material" | "Section" | "Subsection" | "Text" | "Code" | "Comment" | "Drawing";
+export type SearchKind =
+  | "Course"
+  | "Material"
+  | "Section"
+  | "Subsection"
+  | "Text"
+  | "Code"
+  | "Comment"
+  | "Highlight"
+  | "Drawing";
 
 export type SearchResult = {
   kind: SearchKind;
@@ -60,6 +71,23 @@ export type SearchResult = {
 };
 
 export type UploadResult = { url: string; name: string };
+
+/** A book in the library listing (`courseName` is empty for a book with no course). */
+export type BookListItem = MaterialSummary & { courseName: string; courseCode: string; book: BookContent };
+
+/**
+ * A partial update to a book. Only the parts given change, so a book open in
+ * two tabs (one adding highlights, one turning pages) never loses either.
+ */
+export type BookPatch = {
+  status?: BookStatus;
+  progress?: BookProgress;
+  meta?: Partial<BookMeta>;
+  coverUrl?: string | null;
+  addHighlight?: BookHighlight;
+  updateHighlight?: { id: string; note: string };
+  removeHighlight?: string;
+};
 
 // ── Trash, history, links, backups ───────────────────────────────────────
 
@@ -93,13 +121,15 @@ export type Backlink = {
 };
 
 export type LinkTarget = {
-  kind: "material" | "region";
+  kind: "material" | "region" | "highlight" | "page";
   materialId: string;
   materialKind: MaterialKind;
   annotationId?: string;
   blockId?: string;
   /** Region number on its page. */
   n?: number;
+  /** A page of a PDF book (kind "page"). */
+  page?: number;
   title: string;
   path: string;
 };

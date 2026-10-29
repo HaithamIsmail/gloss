@@ -88,6 +88,14 @@ api.post("/courses/:id/materials", (req, res) => {
   res.status(201).json(material);
 });
 
+/** A material by course id in the body, or a book with no course (`courseId` missing or null). */
+api.post("/materials", (req, res) => {
+  const body = req.body ?? {};
+  const material = repo.createMaterial(typeof body.courseId === "string" ? body.courseId : null, body);
+  if (!material) return void res.sendStatus(404);
+  res.status(201).json(material);
+});
+
 api.get("/materials/:id", (req, res) => {
   const material = repo.getMaterial(req.params.id);
   if (!material) return void res.sendStatus(404);
@@ -100,6 +108,17 @@ api.patch("/materials/:id", (req, res) => {
     return void res.status(400).json({ error: "content must be an object or an array of blocks" });
   }
   const material = repo.updateMaterial(req.params.id, body);
+  if (!material) return void res.sendStatus(404);
+  res.json(material);
+});
+
+api.get("/books", (_req, res) => {
+  res.json(repo.listBooks());
+});
+
+/** A partial update to a book: status, where you are, metadata, or one highlight. */
+api.post("/materials/:id/book", (req, res) => {
+  const material = repo.patchBook(req.params.id, req.body ?? {});
   if (!material) return void res.sendStatus(404);
   res.json(material);
 });
@@ -291,7 +310,12 @@ api.post("/convert/slides", upload.single("file"), async (req, res, next) => {
 /** An image page's picture (folder thumbnails). Redirects so the image itself stays cacheable. */
 api.get("/materials/:id/image", (req, res) => {
   const m = repo.getMaterial(req.params.id);
-  const url = m?.kind === "image" ? (m.content as { url?: string }).url : undefined;
+  const url =
+    m?.kind === "image"
+      ? (m.content as { url?: string }).url
+      : m?.kind === "book"
+        ? ((m.content as { coverUrl?: string | null }).coverUrl ?? undefined)
+        : undefined;
   if (!url) return void res.sendStatus(404);
   res.set("Cache-Control", "no-cache").redirect(302, url);
 });

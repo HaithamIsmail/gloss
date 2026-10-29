@@ -120,13 +120,19 @@ export const MATH_BLOCK = "mathBlock";
 /** A link to another material (or one region in it), typed with "@" in a page. */
 export type MentionProps = {
   targetId: string;
-  /** Set when the link points at one region of an image. */
+  /** Set when the link points at one region of an image, a book highlight, or ("page:N") a page of a PDF book. */
   annotationId: string;
   /** The image block holding that region, when it sits inside a page. */
   blockId: string;
   /** Title when the link was made: shown if the target is gone. */
   label: string;
 };
+
+/** The page number a mention points at ("page:50"), or null for a region or highlight. */
+export function mentionPage(annotationId: string | undefined): number | null {
+  const m = /^page:(\d+)$/.exec(annotationId ?? "");
+  return m ? Number(m[1]) : null;
+}
 
 /** Visits every inline content item (text, links, mentions, math) in a block tree. */
 export function walkInline(blocks: LooseBlock[], fn: (item: Record<string, unknown>) => void) {

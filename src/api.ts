@@ -2,6 +2,8 @@ import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import type {
   BackupInfo,
   Backlink,
+  BookListItem,
+  BookPatch,
   Course,
   Drawing,
   DrawingScene,
@@ -66,14 +68,20 @@ export const api = {
   updateCourse: (id: string, patch: { name?: string; code?: string; position?: number }) =>
     request<Course>("PATCH", `/api/courses/${id}`, patch),
   deleteCourse: (id: string) => request<Trashed>("DELETE", `/api/courses/${id}`),
-  createMaterial: (courseId: string, input: NewMaterial = {}) =>
-    request<Material>("POST", `/api/courses/${courseId}/materials`, input),
+  /** In a course, or (books only) in the library with no course when `courseId` is null. */
+  createMaterial: (courseId: string | null, input: NewMaterial = {}) =>
+    courseId
+      ? request<Material>("POST", `/api/courses/${courseId}/materials`, input)
+      : request<Material>("POST", "/api/materials", input),
   material: (id: string) => request<Material>("GET", `/api/materials/${id}`),
   updateMaterial: (
     id: string,
-    patch: { title?: string; content?: unknown; position?: number; courseId?: string; parentId?: string | null },
+    patch: { title?: string; content?: unknown; position?: number; courseId?: string | null; parentId?: string | null },
   ) => request<MaterialSummary>("PATCH", `/api/materials/${id}`, patch),
   deleteMaterial: (id: string) => request<Trashed>("DELETE", `/api/materials/${id}`),
+  /** A partial update to a book (status, position, metadata, one highlight). */
+  patchBook: (id: string, patch: BookPatch) => request<Material>("POST", `/api/materials/${id}/book`, patch),
+  books: () => request<BookListItem[]>("GET", "/api/books"),
   versions: (materialId: string) => request<VersionSummary[]>("GET", `/api/materials/${materialId}/versions`),
   version: (id: string) => request<Version>("GET", `/api/versions/${id}`),
   restoreVersion: (materialId: string, versionId: string) =>
@@ -147,7 +155,13 @@ export const keys = {
   backlinks: (id: string) => ["backlinks", id] as const,
   backups: ["backups"] as const,
   themes: ["themes"] as const,
+  books: ["books"] as const,
 };
+
+/** Every book in the library, with its cover, status and progress. */
+export function useBooks() {
+  return useQuery({ queryKey: keys.books, queryFn: api.books, staleTime: 0, refetchOnWindowFocus: true });
+}
 
 export function useTree() {
   return useQuery({ queryKey: keys.tree, queryFn: api.tree });
@@ -164,24 +178,25 @@ export function useMaterial(id: string | undefined) {
 
 /** Writes a fresh material summary into the cached tree (after a save or rename). */
 export function patchTreeMaterial(summary: MaterialSummary) {
+  const place = (list: MaterialSummary[], here: boolean) =>
+    here ? list.map((m) => (m.id === summary.id ? summary : m)) : list.filter((m) => m.id !== summary.id);
   queryClient.setQueryData<Tree>(keys.tree, (tree) =>
     tree && {
-      courses: tree.courses.map((c) => ({
-        ...c,
-        materials:
-          c.id === summary.courseId
-            ? c.materials.map((m) => (m.id === summary.id ? summary : m))
-            : c.materials.filter((m) => m.id !== summary.id),
-      })),
+      courses: tree.courses.map((c) => ({ ...c, materials: place(c.materials, c.id === summary.courseId) })),
+      library: place(tree.library, summary.courseId === null),
     },
   );
 }
 
 export function patchTreeCourse(id: string, patch: Partial<Course>) {
   queryClient.setQueryData<Tree>(keys.tree, (tree) =>
-    tree && { courses: tree.courses.map((c) => (c.id === id ? { ...c, ...patch } : c)) },
+    tree && { ...tree, courses: tree.courses.map((c) => (c.id === id ? { ...c, ...patch } : c)) },
   );
 }
+
+/** Every material in the tree: those in courses and the books in the library only. */
+export const allMaterials = (tree: Tree | undefined) =>
+  tree ? [...tree.courses.flatMap((c) => c.materials), ...tree.library] : [];
 
 const invalidateTree = () => queryClient.invalidateQueries({ queryKey: keys.tree });
 
@@ -190,12 +205,11 @@ export function useCreateCourse() {
 }
 
 const titleInTree = (id: string) => {
-  for (const c of queryClient.getQueryData<Tree>(keys.tree)?.courses ?? []) {
-    if (c.id === id) return c.name || "Untitled course";
-    const m = c.materials.find((x) => x.id === id);
-    if (m) return m.title || "Untitled";
-  }
-  return "Untitled";
+  const tree = queryClient.getQueryData<Tree>(keys.tree);
+  const course = tree?.courses.find((c) => c.id === id);
+  if (course) return course.name || "Untitled course";
+  const m = allMaterials(tree).find((x) => x.id === id);
+  return m ? m.title || "Untitled" : "Untitled";
 };
 
 /** Brings something back from the trash and refreshes everything that may show it. */
@@ -230,7 +244,7 @@ export function useDeleteCourse() {
 
 export function useCreateMaterial() {
   return useMutation({
-    mutationFn: ({ courseId, ...input }: NewMaterial & { courseId: string }) => api.createMaterial(courseId, input),
+    mutationFn: ({ courseId, ...input }: NewMaterial & { courseId: string | null }) => api.createMaterial(courseId, input),
     onSuccess: (m) => {
       queryClient.setQueryData(keys.material(m.id), m);
       return invalidateTree();
@@ -250,7 +264,8 @@ export function useDeleteMaterial() {
   });
 }
 
-export type MoveTo = { id: string; courseId?: string; parentId?: string | null; position?: number };
+/** `courseId` null puts a book in the library with no course. */
+export type MoveTo = { id: string; courseId?: string | null; parentId?: string | null; position?: number };
 
 /** Reorders a material, or moves it to another course or folder (a folder takes its pages along). */
 export function useMoveMaterial() {
@@ -259,10 +274,10 @@ export function useMoveMaterial() {
     onMutate: ({ id, courseId, parentId, position }) => {
       queryClient.setQueryData<Tree>(keys.tree, (tree) => {
         if (!tree) return tree;
-        const moving = tree.courses.flatMap((c) => c.materials).filter((m) => m.id === id || m.parentId === id);
+        const moving = allMaterials(tree).filter((m) => m.id === id || m.parentId === id);
         const self = moving.find((m) => m.id === id);
         if (!self) return tree;
-        const to = courseId ?? self.courseId;
+        const to = courseId !== undefined ? courseId : self.courseId;
         const moved = moving.map((m) =>
           m.id === id
             ? {
@@ -274,13 +289,12 @@ export function useMoveMaterial() {
             : { ...m, courseId: to },
         );
         const ids = new Set(moved.map((m) => m.id));
+        const byPosition = (a: MaterialSummary, b: MaterialSummary) => a.position - b.position;
+        const place = (list: MaterialSummary[], courseId: string | null) =>
+          [...list.filter((m) => !ids.has(m.id)), ...moved.filter((m) => m.courseId === courseId)].sort(byPosition);
         return {
-          courses: tree.courses.map((c) => ({
-            ...c,
-            materials: [...c.materials.filter((m) => !ids.has(m.id)), ...moved.filter((m) => m.courseId === c.id)].sort(
-              (a, b) => a.position - b.position,
-            ),
-          })),
+          courses: tree.courses.map((c) => ({ ...c, materials: place(c.materials, c.id) })),
+          library: place(tree.library, null),
         };
       });
     },

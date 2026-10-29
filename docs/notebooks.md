@@ -96,8 +96,9 @@ Letters are lowercase, without Shift or Caps Lock.
 ## Markdown cells
 
 - **Double-click** a rendered markdown cell to edit it; run it (`Shift Enter`) or select another cell to render it.
-- Supports GitHub-flavoured Markdown (tables, strike-through, links, images) and **math**: `$…$` inline and `$$…$$`
-  on its own line, rendered with KaTeX.
+- Supports GitHub-flavoured Markdown (tables, strike-through, links, images) and **math**, rendered with KaTeX:
+  `$…$` or `\(…\)` inline, `$$…$$` or `\[…\]` on its own line (it may span several lines, e.g. `\begin{aligned}`).
+  Dollars inside code are left alone; write `\$` for a literal dollar sign.
 - `#` lines are **Sections** and `##` lines are **Subsections**: numbered (if *Number sections* is on), listed in the
   index and in the sidebar, and counted on the course page.
 - Images embedded in imported notebooks (cell attachments) are shown.

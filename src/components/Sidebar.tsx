@@ -1,4 +1,16 @@
-import { ChevronDown, ChevronRight, Compass, DatabaseBackup, LayoutGrid, PenTool, Plus, Search, Settings, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Compass,
+  DatabaseBackup,
+  LayoutGrid,
+  PenTool,
+  Plus,
+  Search,
+  Settings,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useRef, type DragEvent } from "react";
 import { Link, useMatch, useNavigate } from "react-router";
 import type { Course, MaterialSummary } from "../../shared/api";
@@ -19,6 +31,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const homeMatch = useMatch("/");
   const canvasMatch = useMatch("/canvas/*");
+  const libraryMatch = useMatch("/library");
   const trashMatch = useMatch("/trash");
   const backupsMatch = useMatch("/backups");
   const settingsMatch = useMatch("/settings/*");
@@ -28,6 +41,8 @@ export function Sidebar() {
   const activeCourseId =
     courseMatch?.params.courseId ??
     tree?.courses.find((c) => c.materials.some((m) => m.id === activeMaterialId))?.id;
+  // A book with no course: the Library button lights up instead of a course.
+  const inLibrary = !!activeMaterialId && !!tree?.library.some((m) => m.id === activeMaterialId);
 
   const createCourse = useCreateCourse();
   const setSearchOpen = useUI((s) => s.setSearchOpen);
@@ -63,6 +78,15 @@ export function Sidebar() {
         >
           <PenTool size={16} />
           <span>Canvas</span>
+        </button>
+        <button
+          type="button"
+          className={`side-btn${libraryMatch || inLibrary ? " is-active" : ""}`}
+          data-tour="library"
+          onClick={() => navigate("/library")}
+        >
+          <BookOpen size={16} />
+          <span>Library</span>
         </button>
       </div>
 

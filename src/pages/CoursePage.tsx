@@ -160,6 +160,8 @@ function CourseView({ course }: { course: Course }) {
                       .join(" · ")
                   : m.kind === "image"
                   ? plural(m.regions, "region")
+                  : m.kind === "book"
+                  ? plural(m.regions, "highlight")
                   : [plural(sections, "section"), m.regions > 0 && plural(m.regions, "region")].filter(Boolean).join(" · ")}
               </span>
               <span className="material-actions">

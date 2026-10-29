@@ -8,6 +8,7 @@ import ImageView from "./material/ImageView";
 // Each page kind pulls in its own editor, so load them on demand.
 const DocView = lazy(() => import("./material/DocView"));
 const NotebookView = lazy(() => import("./material/NotebookView"));
+const BookView = lazy(() => import("./material/BookView"));
 
 const loading = <div className="page page-narrow muted">Loading…</div>;
 
@@ -40,6 +41,8 @@ export function MaterialPage() {
         <ImageView key={`${material.id}:${revision}`} material={material} />
       ) : material.kind === "notebook" ? (
         <NotebookView key={`${material.id}:${revision}`} material={material} />
+      ) : material.kind === "book" ? (
+        <BookView key={material.id} material={material} />
       ) : (
         <DocView key={`${material.id}:${revision}`} material={material} />
       )}

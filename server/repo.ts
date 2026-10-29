@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import type {
   Backlink,
+  BookListItem,
+  BookPatch,
   Course,
   Drawing,
   DrawingScene,
@@ -24,8 +26,13 @@ import {
   type LooseBlock,
 } from "../shared/content";
 import {
+  asBook,
+  asBookHighlight,
+  asBookLoc,
+  asBookMeta,
   asImagePage,
   defaultContentFor,
+  type BookContent,
   type FolderSource,
   type ImagePageContent,
   isMaterialKind,
@@ -49,7 +56,8 @@ export class UserError extends Error {
 type CourseRow = { id: string; name: string; code: string; position: number };
 type MaterialRow = {
   id: string;
-  course_id: string;
+  /** NULL for a book that lives in the library only. */
+  course_id: string | null;
   parent_id: string | null;
   kind: string;
   title: string;
@@ -66,7 +74,7 @@ const m_ = (cols: string) => cols.split(", ").map((c) => `m.${c}`).join(", ");
 function toSummary(r: MaterialRow): MaterialSummary {
   return {
     id: r.id,
-    courseId: r.course_id,
+    courseId: r.course_id ?? null,
     parentId: r.parent_id ?? null,
     kind: isMaterialKind(r.kind) ? r.kind : "doc",
     title: r.title,
@@ -85,9 +93,9 @@ function nextCoursePosition(): number {
 }
 
 /** End position inside a course's top level, or inside a folder. */
-function nextMaterialPosition(courseId: string, parentId: string | null): number {
+function nextMaterialPosition(courseId: string | null, parentId: string | null): number {
   const row = db
-    .prepare(`SELECT MAX(position) AS p FROM materials WHERE course_id = ? AND parent_id IS ? AND deleted_at IS NULL`)
+    .prepare(`SELECT MAX(position) AS p FROM materials WHERE course_id IS ? AND parent_id IS ? AND deleted_at IS NULL`)
     .get(courseId, parentId) as { p: number | null };
   return (row.p ?? 0) + 1;
 }
@@ -102,12 +110,17 @@ export function getTree(): Tree {
     .prepare(`SELECT ${SUMMARY_COLS} FROM materials WHERE deleted_at IS NULL ORDER BY position`)
     .all() as MaterialRow[];
   const byCourse = new Map<string, MaterialSummary[]>();
+  const library: MaterialSummary[] = [];
   for (const m of materials) {
+    if (!m.course_id) {
+      library.push(toSummary(m));
+      continue;
+    }
     const list = byCourse.get(m.course_id) ?? [];
     list.push(toSummary(m));
     byCourse.set(m.course_id, list);
   }
-  return { courses: courses.map((c) => ({ ...c, materials: byCourse.get(c.id) ?? [] })) };
+  return { courses: courses.map((c) => ({ ...c, materials: byCourse.get(c.id) ?? [] })), library };
 }
 
 export function getCourse(id: string): Course | null {
@@ -165,11 +178,13 @@ const DEFAULT_TITLES: Record<MaterialKind, string> = {
   image: "Untitled image",
   notebook: "Untitled notebook",
   folder: "Untitled folder",
+  book: "Untitled book",
 };
 
 /** A folder that can hold `kind` in `courseId` (folders don't nest). */
-function checkParent(parentId: string | null, courseId: string, kind: MaterialKind, selfId?: string) {
+function checkParent(parentId: string | null, courseId: string | null, kind: MaterialKind, selfId?: string) {
   if (!parentId) return;
+  if (!courseId) throw new UserError("A book outside a course can't be in a folder.");
   const parent = materialRow(parentId);
   if (!parent || kindOf(parent) !== "folder") throw new UserError("That folder doesn't exist.");
   if (parent.course_id !== courseId) throw new UserError("That folder is in another course.");
@@ -177,14 +192,16 @@ function checkParent(parentId: string | null, courseId: string, kind: MaterialKi
   if (kind === "folder") throw new UserError("Folders can't go inside other folders.");
 }
 
+/** Creates a material in a course, or (books only) in the library with no course (`courseId` null). */
 export function createMaterial(
-  courseId: string,
+  courseId: string | null,
   input: { title?: string; kind?: MaterialKind; content?: unknown; parentId?: string | null },
 ): Material | null {
-  if (!getCourse(courseId)) return null;
+  if (courseId && !getCourse(courseId)) return null;
   const id = nanoid(10);
   const now = Date.now();
   const kind: MaterialKind = isMaterialKind(input.kind) ? input.kind : "doc";
+  if (!courseId && kind !== "book") throw new UserError("Only books can live outside a course.");
   const parentId = input.parentId ?? null;
   checkParent(parentId, courseId, kind);
   const content = normalizeContent(kind, input.content ?? defaultContentFor(kind, () => nanoid(10)));
@@ -239,7 +256,8 @@ export function updateMaterial(
     title?: string;
     content?: unknown;
     position?: number;
-    courseId?: string;
+    /** A course, or null to put a book in the library only. */
+    courseId?: string | null;
     parentId?: string | null;
   },
   opts: { snapshot?: "auto" | "skip" } = {},
@@ -275,9 +293,10 @@ export function updateMaterial(
 
     // Moving: to another course, into or out of a folder, or to a new position.
     if (patch.courseId !== undefined || patch.parentId !== undefined || patch.position !== undefined) {
-      const courseId = patch.courseId ?? row.course_id;
+      const courseId = patch.courseId !== undefined ? patch.courseId : row.course_id;
       const movedCourse = courseId !== row.course_id;
-      if (movedCourse && !getCourse(courseId)) throw new UserError("That course doesn't exist.");
+      if (movedCourse && courseId && !getCourse(courseId)) throw new UserError("That course doesn't exist.");
+      if (!courseId && kind !== "book") throw new UserError("Only books can live outside a course.");
       const parentId = patch.parentId !== undefined ? patch.parentId : movedCourse ? null : row.parent_id;
       checkParent(parentId, courseId, kind, id);
       const movedContainer = movedCourse || parentId !== row.parent_id;
@@ -304,19 +323,25 @@ export function allMaterialsWithContent(): (Material & { courseName: string; cou
   const rows = db
     .prepare(
       `SELECT ${m_(SUMMARY_COLS)}, m.content, c.name AS course_name, c.code AS course_code, f.title AS folder_title
-       FROM materials m JOIN courses c ON c.id = m.course_id AND c.deleted_at IS NULL
+       FROM materials m LEFT JOIN courses c ON c.id = m.course_id
        LEFT JOIN materials f ON f.id = m.parent_id
-       WHERE m.deleted_at IS NULL
+       WHERE m.deleted_at IS NULL AND (m.course_id IS NULL OR c.deleted_at IS NULL)
        ORDER BY c.position, m.position`,
     )
-    .all() as (MaterialRow & { course_name: string; course_code: string; folder_title: string | null })[];
+    .all() as (MaterialRow & { course_name: string | null; course_code: string | null; folder_title: string | null })[];
   return rows.map((r) => ({
     ...toSummary(r),
     content: JSON.parse(r.content ?? "[]"),
-    courseName: r.course_name,
-    courseCode: r.course_code,
+    courseName: r.course_name ?? "",
+    courseCode: r.course_code ?? "",
     folderTitle: r.folder_title,
   }));
+}
+
+/** Where a material is, for paths: its course (or "Library" for a book with none), then its folder. */
+export function whereOf(m: { courseName: string; folderTitle?: string | null }): string {
+  const course = m.courseName || "Library";
+  return m.folderTitle ? `${course} / ${m.folderTitle}` : course;
 }
 
 export type SlidePageInput = { title: string; url: string; name: string; text?: string };
@@ -354,6 +379,71 @@ export function createSlideFolder(
     });
   });
   return getMaterial(folderId);
+}
+
+/**
+ * Applies a partial update to a book (status, progress, metadata, one
+ * highlight) on top of what is stored, so tabs don't overwrite each other.
+ * Turning pages doesn't take version snapshots; highlights and notes do.
+ */
+export function patchBook(id: string, patch: BookPatch): Material | null {
+  return tx(() => {
+    const m = getMaterial(id);
+    if (!m || m.kind !== "book") return null;
+    const book: BookContent = asBook(m.content);
+    let important = false;
+    if (patch.status === "unread" || patch.status === "reading" || patch.status === "done") book.status = patch.status;
+    if (patch.progress && typeof patch.progress === "object") {
+      const p = patch.progress;
+      book.progress = {
+        loc: asBookLoc(p.loc),
+        fraction: typeof p.fraction === "number" ? Math.min(1, Math.max(0, p.fraction)) : book.progress.fraction,
+        ...(p.label ? { label: String(p.label) } : {}),
+        updatedAt: Date.now(),
+      };
+      if (book.status === "unread") book.status = "reading";
+    }
+    if (patch.meta && typeof patch.meta === "object") {
+      book.meta = asBookMeta({ ...book.meta, ...patch.meta });
+      important = true;
+    }
+    if (patch.coverUrl !== undefined) book.coverUrl = typeof patch.coverUrl === "string" && patch.coverUrl ? patch.coverUrl : null;
+    if (patch.addHighlight) {
+      const h = asBookHighlight(patch.addHighlight);
+      if (!h) throw new UserError("That highlight has no location.");
+      book.highlights = [...book.highlights.filter((x) => x.id !== h.id), h];
+      important = true;
+    }
+    if (patch.updateHighlight?.id) {
+      const { id: hid, note } = patch.updateHighlight;
+      book.highlights = book.highlights.map((h) => (h.id === hid ? { ...h, note: String(note ?? "") } : h));
+      important = true;
+    }
+    if (patch.removeHighlight) {
+      book.highlights = book.highlights.filter((h) => h.id !== patch.removeHighlight);
+      important = true;
+    }
+    updateMaterial(id, { content: book }, { snapshot: important ? "auto" : "skip" });
+    return getMaterial(id);
+  });
+}
+
+/** Every book, newest reading first, for the library page. */
+export function listBooks(): BookListItem[] {
+  const rows = db
+    .prepare(
+      `SELECT ${m_(SUMMARY_COLS)}, m.content, c.name AS course_name, c.code AS course_code
+       FROM materials m LEFT JOIN courses c ON c.id = m.course_id
+       WHERE m.kind = 'book' AND m.deleted_at IS NULL AND (m.course_id IS NULL OR c.deleted_at IS NULL)
+       ORDER BY m.updated_at DESC`,
+    )
+    .all() as (MaterialRow & { course_name: string | null; course_code: string | null })[];
+  return rows.map((r) => ({
+    ...toSummary(r),
+    courseName: r.course_name ?? "",
+    courseCode: r.course_code ?? "",
+    book: asBook(JSON.parse(r.content ?? "{}")),
+  }));
 }
 
 export function isEmpty(): boolean {
@@ -438,27 +528,47 @@ export function backlinks(materialId: string): Backlink[] {
         `SELECT l.source_id, COUNT(*) AS n, m.title, m.kind, c.name AS course_name
          FROM links l
          JOIN materials m ON m.id = l.source_id AND m.deleted_at IS NULL
-         JOIN courses c ON c.id = m.course_id AND c.deleted_at IS NULL
-         WHERE l.target_id = ? AND l.source_id != ?
+         LEFT JOIN courses c ON c.id = m.course_id
+         WHERE l.target_id = ? AND l.source_id != ? AND (m.course_id IS NULL OR c.deleted_at IS NULL)
          GROUP BY l.source_id ORDER BY m.title`,
       )
-      .all(materialId, materialId) as { source_id: string; n: number; title: string; kind: string; course_name: string }[]
-  ).map((r) => ({ materialId: r.source_id, title: r.title, kind: kindOf(r), courseName: r.course_name, count: r.n }));
+      .all(materialId, materialId) as { source_id: string; n: number; title: string; kind: string; course_name: string | null }[]
+  ).map((r) => ({ materialId: r.source_id, title: r.title, kind: kindOf(r), courseName: r.course_name ?? "", count: r.n }));
 }
 
-/** What "@" can link to: materials, and regions that have a comment. */
+/** What "@" can link to: materials, regions that have a comment, and book highlights. */
 export function linkTargets(query: string): LinkTarget[] {
   const q = query.trim().toLowerCase();
   const hit = (s: string) => !q || s.toLowerCase().includes(q);
   const materials: LinkTarget[] = [];
   const regions: LinkTarget[] = [];
+  const highlights: LinkTarget[] = [];
+  const pages: LinkTarget[] = [];
+  // "geron 50", "geron p. 50", "page 50": a page of a PDF book.
+  const pageQuery = /^(.*?)\s*(?:\b(?:p|pg|page)\.?\s*)?(\d{1,5})$/i.exec(q);
+  const pageOf = pageQuery ? Number(pageQuery[2]) : 0;
+  const bookHit = (s: string) => !pageQuery?.[1] || s.toLowerCase().includes(pageQuery[1]);
   const all = allMaterialsWithContent().sort((a, b) => b.updatedAt - a.updatedAt);
   for (const m of all) {
-    const where = m.folderTitle ? `${m.courseName} / ${m.folderTitle}` : m.courseName;
+    const where = whereOf(m);
     if (hit(m.title)) {
       materials.push({ kind: "material", materialId: m.id, materialKind: m.kind, title: m.title || "Untitled", path: where });
     }
     if (!q) continue; // regions only when searching
+    if (pageOf && m.kind === "book") {
+      const b = asBook(m.content);
+      if (b.file.format === "pdf" && (!b.length || pageOf <= b.length) && (bookHit(m.title) || bookHit(b.meta.authors))) {
+        pages.push({
+          kind: "page",
+          materialId: m.id,
+          materialKind: m.kind,
+          annotationId: `page:${pageOf}`,
+          page: pageOf,
+          title: `Page ${pageOf}`,
+          path: `${where} / ${m.title}`,
+        });
+      }
+    }
     const addRegion = (a: { id: string; comment: string }, n: number, blockId?: string) => {
       if (!a.comment || !hit(a.comment)) return;
       regions.push({
@@ -479,8 +589,23 @@ export function linkTargets(query: string): LinkTarget[] {
         if (b.type === ANNOTATED_IMAGE) parseAnnotations(b.props?.annotations).forEach((a) => addRegion(a, ++n, b.id));
       });
     }
+    if (m.kind === "book") {
+      asBook(m.content).highlights.forEach((h, i) => {
+        const text = h.quote || h.note;
+        if (!text || !(hit(h.quote) || hit(h.note))) return;
+        highlights.push({
+          kind: "highlight",
+          materialId: m.id,
+          materialKind: m.kind,
+          annotationId: h.id,
+          n: i + 1,
+          title: text.length > 70 ? `${text.slice(0, 67)}…` : text,
+          path: `${where} / ${m.title}`,
+        });
+      });
+    }
   }
-  return [...materials.slice(0, 12), ...regions.slice(0, 12)];
+  return [...materials.slice(0, 12), ...pages.slice(0, 12), ...regions.slice(0, 12), ...highlights.slice(0, 12)];
 }
 
 // ── Trash ────────────────────────────────────────────────────────────────
@@ -510,11 +635,11 @@ export function trashCourse(id: string): string | null {
 export function trashMaterial(id: string): string | null {
   const row = materialRow(id);
   if (!row) return null;
-  const course = getCourse(row.course_id);
+  const course = row.course_id ? getCourse(row.course_id) : null;
   const folder = row.parent_id ? materialRow(row.parent_id) : undefined;
   const pages = (db.prepare(`SELECT COUNT(*) AS n FROM materials WHERE parent_id = ? AND deleted_at IS NULL`).get(id) as { n: number }).n;
   return tx(() => {
-    const where = [course?.name, folder?.title].filter(Boolean).join(" / ");
+    const where = [row.course_id ? course?.name : "Library", folder?.title].filter(Boolean).join(" / ");
     const trashId = addToTrash("material", id, row.title || "Untitled", where, pages);
     db.prepare(
       `UPDATE materials SET deleted_at = ?, trash_id = ? WHERE (id = ? OR parent_id = ?) AND deleted_at IS NULL`,
@@ -570,9 +695,12 @@ export function restoreTrash(trashId: string): { kind: TrashKind; itemId: string
   if (!t) return null;
   if (t.kind === "material") {
     const m = db.prepare(`SELECT course_id, parent_id FROM materials WHERE id = ?`).get(t.item_id) as
-      | { course_id: string; parent_id: string | null }
+      | { course_id: string | null; parent_id: string | null }
       | undefined;
-    const course = m && (db.prepare(`SELECT name, deleted_at FROM courses WHERE id = ?`).get(m.course_id) as { name: string; deleted_at: number | null } | undefined);
+    const course =
+      m?.course_id ?
+        (db.prepare(`SELECT name, deleted_at FROM courses WHERE id = ?`).get(m.course_id) as { name: string; deleted_at: number | null } | undefined)
+      : undefined;
     if (course?.deleted_at) {
       throw new UserError(`This was in “${course.name}”, which is in the trash too. Restore the course first.`, 409);
     }

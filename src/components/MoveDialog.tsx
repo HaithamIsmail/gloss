@@ -1,4 +1,4 @@
-import { BookOpen, Folder, X } from "lucide-react";
+import { BookOpen, Folder, Library, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMoveMaterial, useTree } from "../api";
 import { useUI } from "../store";
@@ -28,7 +28,7 @@ function MoveDialog({ materialId, onClose }: { materialId: string; onClose: () =
   const isFolder = material.kind === "folder";
   const match = (s: string) => s.toLowerCase().includes(q.trim().toLowerCase());
 
-  const go = (courseId: string, parentId: string | null, label: string) => {
+  const go = (courseId: string | null, parentId: string | null, label: string) => {
     onClose();
     // The dialog is gone by the time this settles, so wait on the promise (errors toast in the hook).
     move
@@ -36,8 +36,19 @@ function MoveDialog({ materialId, onClose }: { materialId: string; onClose: () =
       .then(() => toast(`Moved “${material.title || "Untitled"}” to ${label}`))
       .catch(() => undefined);
     if (parentId) useUI.getState().setExpanded(parentId, true);
-    useUI.getState().setExpanded(courseId, true);
+    if (courseId) useUI.getState().setExpanded(courseId, true);
   };
+  // Books can live in the library with no course.
+  const inLibrary = material.kind === "book" && material.courseId === null;
+  const libraryOption = material.kind === "book" && match("library") && (
+    <div className="move-group">
+      <button type="button" className="move-option" disabled={inLibrary} onClick={() => go(null, null, "the library")}>
+        <Library size={16} />
+        <span className="grow">Library (no course)</span>
+        {inLibrary && <small className="muted">Current place</small>}
+      </button>
+    </div>
+  );
 
   return (
     <div className="search-backdrop" onMouseDown={onClose}>
@@ -54,6 +65,7 @@ function MoveDialog({ materialId, onClose }: { materialId: string; onClose: () =
           </button>
         </div>
         <div className="search-results move-list">
+          {libraryOption}
           {tree.courses.map((c) => {
             const folders = isFolder ? [] : topLevel(c).filter((m) => m.kind === "folder" && match(m.title));
             const courseHit = match(c.name) || match(c.code);

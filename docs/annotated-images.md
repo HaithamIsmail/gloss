@@ -56,8 +56,9 @@ The comment list (headed *4 regions*) shows each region's **number**, its commen
 
 - Click a comment to edit it. **Enter** saves, **Shift Enter** adds a new line, **Esc** or clicking away also saves.
 - Comments are **Markdown with LaTeX**: `**bold**`, `*italic*`, lists (`- item`), `` `code` ``, links
-  (`[text](https://…)`, opened in a new tab), `$x^2$` for a formula in the line and `$$…$$` for a centred one. They are
-  shown formatted; clicking the text opens the source for editing (clicking a link follows it). Each line break is kept.
+  (`[text](https://…)`, opened in a new tab), `$x^2$` or `\(x^2\)` for a formula in the line, and `$$…$$` or `\[…\]`
+  for a centred one — which may span several lines, e.g. `$$ \begin{aligned} … \end{aligned} $$`. Write `\$` for a
+  dollar sign; prices like "$5 and $10" stay text. They are shown formatted; clicking the text opens the source for editing (clicking a link follows it). Each line break is kept.
   The same formatting appears in the hover preview, in printouts and PDFs, and (as Markdown) in exports.
 - **3 passages** jumps to the linked passages in the text; click again for the next one.
 

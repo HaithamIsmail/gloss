@@ -15,6 +15,7 @@ Everything Gloss can do, chapter by chapter.
 | [Pages](pages.md) | The block editor: `/` menu, shortcuts, toolbar, sections and the index, callouts, tables, formulas, `@` links, view options |
 | [Annotated images](annotated-images.md) | Regions and comments, linking text to regions, hover highlighting, image pages, zoom and undo |
 | [Slides, PDFs and folders](slides-and-pdfs.md) | Importing decks and PDFs, conversion, slide navigation, folders |
+| [The library: books](library.md) | PDFs and EPUBs kept whole, the library shelf, reading, highlights with notes, `@` links that open a book at a highlight, progress and status |
 | [Notebooks](notebooks.md) | Cells, running code, shortcuts, outputs, browser Python, your own environments, `.ipynb` |
 | [Canvas](canvas.md) | Drawings with Excalidraw, adding them to pages, drawing from a page |
 | [Trash and version history](trash-and-history.md) | Undo, restoring, deleting for good, earlier versions |
@@ -42,8 +43,10 @@ A quick map from feature to chapter.
 - **Write:** block editor with `/` menu and Markdown shortcuts · numbered sections and subsections · live index ·
   callouts · tables · toggle lists · code blocks · colours — [pages](pages.md)
 - **Math:** `$…$` inline formulas, `$$` formula blocks, Σ toolbar button (KaTeX) — [pages](pages.md#formulas-latex)
-- **Link:** `@` links to materials, slides and individual image regions · *Linked from* backlinks —
+- **Link:** `@` links to materials, slides, individual image regions and book highlights · *Linked from* backlinks —
   [pages](pages.md#links-to-other-materials-)
+- **Read:** a library of PDFs and EPUBs kept as they are · covers, status and progress · highlights with notes ·
+  find in the book · links that open the book in a new tab at the highlighted passage — [library](library.md)
 - **Annotate:** draw, move, resize regions · numbered comments in Markdown with LaTeX · link passages · three-way hover highlight · preview
   of off-screen regions · full-page image view with zoom, undo and split — [annotated images](annotated-images.md)
 - **Import:** PDFs and PowerPoint/OpenDocument decks become folders of annotated slides, titled and searchable,

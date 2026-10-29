@@ -18,7 +18,7 @@ and moving things.
 ## Courses and materials
 
 - A **course** has a name and a code (e.g. *Human Anatomy*, *ANAT 201*).
-- A course holds **materials**, of four kinds:
+- A course holds **materials**, of five kinds:
 
 | Kind | What it is | Guide |
 | --- | --- | --- |
@@ -26,7 +26,9 @@ and moving things.
 | **Annotated image** | One image with numbered regions and comments | [Annotated images](annotated-images.md#annotated-image-pages) |
 | **Notebook** | Jupyter-style Python code and markdown cells | [Notebooks](notebooks.md) |
 | **Folder** | Groups pages, images and notebooks (imported slides arrive as a folder) | [Slides and folders](slides-and-pdfs.md#folders) |
+| **Book** | A PDF or EPUB kept as it is, read in the app, with highlights and notes | [The library](library.md) |
 
+- **Books** can also live outside any course, in the [Library](library.md) only.
 - **Drawings** live in the [Canvas](canvas.md) and can be attached to a course and placed on pages.
 
 ## The sidebar
@@ -126,8 +128,9 @@ it. Folders only go between top-level items (they can't nest).
 **On the course page**, drag a material by its grip to reorder it or onto a folder. **In a folder page**, drag cards to
 reorder them.
 
-**Move to…** (on a course-page row, or **⋯ → Move to…** on a material) opens a list of courses and their folders. Type
-to filter. The current place is marked *Current place*. A message confirms *Moved "…" to …*.
+**Move to…** (on a course-page row, or **⋯ → Move to…** on a material) opens a list of courses and their folders (for a
+book, **Library (no course)** first). Type to filter. The current place is marked *Current place*. A message confirms
+*Moved "…" to …*.
 
 ## Search
 

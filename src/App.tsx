@@ -22,6 +22,7 @@ const CanvasListPage = lazy(() => import("./pages/CanvasListPage").then((m) => (
 const CanvasPage = lazy(() => import("./pages/CanvasPage").then((m) => ({ default: m.CanvasPage })));
 const HistoryHost = lazy(() => import("./components/HistoryDialog").then((m) => ({ default: m.HistoryHost })));
 const PrintPage = lazy(() => import("./pages/PrintPage").then((m) => ({ default: m.PrintPage })));
+const LibraryPage = lazy(() => import("./pages/LibraryPage").then((m) => ({ default: m.LibraryPage })));
 
 function Layout() {
   const sidebarOpen = useUI((s) => s.sidebarOpen);
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: "c/:courseId", element: <CoursePage /> },
       { path: "m/:materialId", element: <MaterialPage /> },
+      { path: "library", element: <LibraryPage /> },
       { path: "canvas", element: <CanvasListPage /> },
       { path: "canvas/:drawingId", element: <CanvasPage /> },
       { path: "trash", element: <TrashPage /> },

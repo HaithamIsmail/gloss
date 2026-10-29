@@ -17,7 +17,16 @@ function iconFor(t: TrashItem) {
 }
 
 function describe(t: TrashItem) {
-  const what = t.kind === "course" ? "Course" : t.kind === "drawing" ? "Drawing" : t.materialKind === "folder" ? "Folder" : "Material";
+  const what =
+    t.kind === "course"
+      ? "Course"
+      : t.kind === "drawing"
+        ? "Drawing"
+        : t.materialKind === "folder"
+          ? "Folder"
+          : t.materialKind === "book"
+            ? "Book"
+            : "Material";
   const parts = [what];
   if (t.where) parts.push(`in ${t.where}`);
   if (t.contains) parts.push(t.kind === "course" ? plural(t.contains, "material") : plural(t.contains, "page"));

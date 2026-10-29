@@ -16,7 +16,16 @@ import {
   type LooseBlock,
   type MentionProps,
 } from "../shared/content";
-import { asFolder, asImagePage, asNotebook, type MimeBundle, type NotebookContent } from "../shared/pages";
+import {
+  asBook,
+  asFolder,
+  asImagePage,
+  asNotebook,
+  BOOK_STATUS_LABEL,
+  bookProgressLabel,
+  type MimeBundle,
+  type NotebookContent,
+} from "../shared/pages";
 import { writeSnapshot } from "./backup";
 import { DATA_DIR, UPLOAD_DIR } from "./db";
 import * as repo from "./repo";
@@ -296,6 +305,32 @@ function imagePageMd(m: Material, ctx: Ctx): string {
   return `${lines.join("\n").trimEnd()}\n`;
 }
 
+/** A book: its details, where you are, and every highlight with its note. The file itself goes in the zip. */
+function bookMd(m: Material, ctx: Ctx): string {
+  const b = asBook(m.content);
+  const lines = [`# ${escapeMd(m.title || "Untitled")}`, ""];
+  if (b.meta.authors) lines.push(`*${escapeMd(b.meta.authors)}*`, "");
+  const facts = [
+    b.meta.year && `Year: ${escapeMd(b.meta.year)}`,
+    b.meta.publisher && `Publisher: ${escapeMd(b.meta.publisher)}`,
+    b.meta.tags.length && `Tags: ${b.meta.tags.map(escapeMd).join(", ")}`,
+    `Status: ${BOOK_STATUS_LABEL[b.status]} (${bookProgressLabel(b)})`,
+    b.file.url && `File: [${escapeMd(b.file.name || "book")}](${asset(ctx, b.file.url)})`,
+  ].filter(Boolean) as string[];
+  lines.push(...facts.map((f) => `- ${f}`), "");
+  if (b.meta.description) lines.push(escapeMd(b.meta.description), "");
+  if (b.highlights.length) {
+    lines.push("## Highlights", "");
+    b.highlights.forEach((h, i) => {
+      const where = h.loc.kind === "pdf" ? `p. ${h.loc.page}` : `${Math.round(h.at * 100)}%`;
+      lines.push(`${i + 1}. ${where}`, "");
+      if (h.quote) lines.push(...h.quote.split("\n").map((l) => `    > ${escapeMd(l)}`), "");
+      if (h.note) lines.push(...h.note.split("\n").map((l) => `    ${l}`), "");
+    });
+  }
+  return `${lines.join("\n").trimEnd()}\n`;
+}
+
 const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
 const joinText = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join("") : (v ?? ""));
 
@@ -389,6 +424,8 @@ function writePlans(bundle: Bundle, plans: Plan[], files: Map<string, string>) {
       writePlans(bundle, p.children ?? [], files);
     } else if (m.kind === "image") {
       bundle.text(p.file, imagePageMd(m, ctx));
+    } else if (m.kind === "book") {
+      bundle.text(p.file, bookMd(m, ctx));
     } else if (m.kind === "notebook") {
       const nb = asNotebook(m.content);
       bundle.text(p.file, notebookMd(m, nb, ctx));
@@ -424,12 +461,14 @@ export function exportCourse(courseId: string): ZipStream | null {
 /** One material (a folder with its pages) as Markdown. */
 export function exportMaterial(materialId: string): ZipStream | null {
   const m = repo.getMaterial(materialId);
-  const course = m && repo.getCourse(m.courseId);
-  if (!m || !course) return null;
-  const summary = course.materials.find((s) => s.id === m.id)!;
+  if (!m) return null;
+  // A book in the library only has no course: it is exported on its own.
+  const course = m.courseId ? repo.getCourse(m.courseId) : null;
+  const all = course?.materials ?? [m];
+  const summary = all.find((s) => s.id === m.id) ?? m;
   const bundle = new Bundle();
   const files = new Map<string, string>();
-  const plans = plan(bundle, [summary], course.materials, "", files);
+  const plans = plan(bundle, [summary], all, "", files);
   writePlans(bundle, plans, files);
   bundle.zip.end();
   return { name: `${safeName(m.title)} (Markdown).zip`, stream: bundle.zip.outputStream };

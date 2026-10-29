@@ -1,9 +1,10 @@
-import { Presentation, Upload } from "lucide-react";
+import { BookPlus, Presentation, Upload } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import type { MaterialKind } from "../../shared/pages";
 import { useCreateMaterial } from "../api";
+import { startBookImport } from "../books/importBook";
 import { KIND_ICON, KIND_LABEL } from "../kinds";
 import { pickIpynbFile, readIpynb } from "../notebook/ipynb";
 import { startSlideImport } from "../slides/SlideImport";
@@ -98,7 +99,7 @@ export function NewMaterialMenu({
       {open &&
         createPortal(
           <div ref={pop} className="new-menu" style={{ left: pos.left, top: pos.top }} onClick={(e) => e.stopPropagation()}>
-            {OPTIONS.filter((o) => !(parentId && o.kind === "folder")).map(({ kind, hint }) => {
+            {OPTIONS.filter((o) => !(parentId && o.kind === "folder") && o.kind !== "book").map(({ kind, hint }) => {
               const Icon = KIND_ICON[kind];
               return (
                 <button key={kind} type="button" className="new-menu-item" onClick={() => void make({ kind })}>
@@ -127,6 +128,20 @@ export function NewMaterialMenu({
                 </span>
               </button>
             )}
+            <button
+              type="button"
+              className="new-menu-item"
+              onClick={() => {
+                setOpen(false);
+                void startBookImport(courseId, navigate, parentId);
+              }}
+            >
+              <BookPlus size={18} />
+              <span>
+                <strong>Add book</strong>
+                <small>A PDF or EPUB kept as it is, read here, with highlights (.pdf, .epub)</small>
+              </span>
+            </button>
             <button type="button" className="new-menu-item" onClick={() => void importNotebook()}>
               <Upload size={18} />
               <span>
