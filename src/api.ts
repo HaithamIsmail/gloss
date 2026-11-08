@@ -1,5 +1,7 @@
 import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  ArtifactFileText,
+  ArtifactMaterial,
   BackupInfo,
   Backlink,
   BookListItem,
@@ -23,7 +25,7 @@ import type {
 } from "../shared/api";
 import type { LooseBlock } from "../shared/content";
 import type { PythonEnv } from "../shared/kernel";
-import type { FolderSource, MaterialKind } from "../shared/pages";
+import type { ArtifactFile, FolderSource, MaterialKind } from "../shared/pages";
 import { toast } from "./toast";
 
 export const queryClient = new QueryClient({
@@ -82,6 +84,53 @@ export const api = {
   /** A partial update to a book (status, position, metadata, one highlight). */
   patchBook: (id: string, patch: BookPatch) => request<Material>("POST", `/api/materials/${id}/book`, patch),
   books: () => request<BookListItem[]>("GET", "/api/books"),
+  // ── Artifacts: HTML pages kept as files ──
+  /** Imports an artifact from files picked in the browser (paths keep any folder structure). */
+  importArtifact: async (
+    courseId: string,
+    files: { file: File; path: string }[],
+    fields: { title?: string; description?: string; parentId?: string | null } = {},
+  ): Promise<ArtifactMaterial> => {
+    const form = new FormData();
+    for (const f of files) form.append("files", f.file, f.file.name);
+    form.append("paths", JSON.stringify(files.map((f) => f.path)));
+    if (fields.title) form.append("title", fields.title);
+    if (fields.description) form.append("description", fields.description);
+    if (fields.parentId) form.append("parentId", fields.parentId);
+    const res = await fetch(`/api/courses/${courseId}/artifacts`, { method: "POST", body: form });
+    if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? `Import failed (${res.status})`);
+    return res.json();
+  },
+  /** A new artifact from HTML text (and optional other text files). */
+  createArtifact: (courseId: string, input: { title?: string; description?: string; parentId?: string | null; html: string }) =>
+    request<ArtifactMaterial>("POST", `/api/courses/${courseId}/artifacts`, input),
+  patchArtifact: (id: string, patch: { description?: string; source?: string }) =>
+    request<ArtifactMaterial>("POST", `/api/materials/${id}/artifact`, patch),
+  artifactFiles: (id: string) => request<ArtifactFile[]>("GET", `/api/materials/${id}/artifact/files`),
+  artifactText: (id: string, path: string) =>
+    request<ArtifactFileText>("GET", `/api/materials/${id}/artifact/text?path=${encodeURIComponent(path)}`),
+  writeArtifactText: (id: string, path: string, text: string) =>
+    request<ArtifactMaterial>("POST", `/api/materials/${id}/artifact/text`, { path, text }),
+  deleteArtifactFile: (id: string, path: string) =>
+    request<ArtifactMaterial>("DELETE", `/api/materials/${id}/artifact/file?path=${encodeURIComponent(path)}`),
+  /** Adds files to an existing artifact (each replaces a file at the same path). */
+  addArtifactFiles: async (id: string, files: { file: File; path: string }[]): Promise<ArtifactMaterial | null> => {
+    let last: ArtifactMaterial | null = null;
+    for (const f of files) {
+      const res = await fetch(`/api/materials/${id}/artifact/file?path=${encodeURIComponent(f.path)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: f.file,
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? `Upload failed (${res.status})`);
+      last = await res.json();
+    }
+    return last;
+  },
+  artifactHistory: (id: string) => request<{ at: number; size: number }[]>("GET", `/api/materials/${id}/artifact/history`),
+  artifactHistoryText: (id: string, at: number) => request<{ at: number; text: string }>("GET", `/api/materials/${id}/artifact/history/${at}`),
+  restoreArtifactHistory: (id: string, at: number) =>
+    request<ArtifactMaterial>("POST", `/api/materials/${id}/artifact/history/${at}/restore`),
   versions: (materialId: string) => request<VersionSummary[]>("GET", `/api/materials/${materialId}/versions`),
   version: (id: string) => request<Version>("GET", `/api/versions/${id}`),
   restoreVersion: (materialId: string, versionId: string) =>

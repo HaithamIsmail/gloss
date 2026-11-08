@@ -30,6 +30,9 @@ version history, backups and exports. It runs on your own computer; your notes s
 - **Links.** Type `@` to link another page, slide or even one region of an image; every material shows what links to
   it.
 - **Canvas.** Excalidraw drawings, usable on their own or placed on pages.
+- **Artifacts.** Interactive HTML pages — the kind Claude makes, or any you write — kept in a course with their files,
+  shown live in a sandboxed frame, with a source editor and earlier versions. A small API lets an agent add and edit
+  them for you.
 - **Search everything** with `Ctrl K` — titles, sections, text, region comments, slide text, code, drawings.
 - **Nothing gets lost.** Trash with Undo (30 days), version history, a database backup every time the app starts.
 - **Take it with you.** Export a course as Markdown or PDF, or everything as one zip.
@@ -75,7 +78,7 @@ The full guide is in [`docs/`](docs/README.md):
 
 - [Getting started](docs/getting-started.md) · [The workspace](docs/workspace.md) · [Pages](docs/pages.md) ·
   [Annotated images](docs/annotated-images.md) · [Slides, PDFs and folders](docs/slides-and-pdfs.md) ·
-  [Notebooks](docs/notebooks.md) · [Canvas](docs/canvas.md)
+  [Notebooks](docs/notebooks.md) · [Canvas](docs/canvas.md) · [Artifacts](docs/artifacts.md)
 - [Trash and version history](docs/trash-and-history.md) · [Themes](docs/themes.md) · [Backups and export](docs/backups-and-export.md) ·
   [Keyboard shortcuts](docs/keyboard-shortcuts.md) · [Troubleshooting and FAQ](docs/troubleshooting.md)
 - [Configuration](docs/configuration.md) · [Architecture](docs/architecture.md) · [HTTP API](docs/api.md)
@@ -95,6 +98,6 @@ docs/     documentation
 
 ## Your data
 
-Everything lives in `data/` (database, uploads, backups, notebook folders), which is ignored by Git. Gloss listens only
+Everything lives in `data/` (database, uploads, artifacts, backups, notebook folders), which is ignored by Git. Gloss listens only
 on `127.0.0.1` and accepts requests only from this computer, because notebooks can run code on it — see
 [Configuration](docs/configuration.md#security-model) before opening it to other devices.

@@ -4,7 +4,7 @@ import { api, keys, patchTreeMaterial, queryClient } from "../../api";
 import { registerFlusher } from "../../flush";
 import { useUI } from "../../store";
 
-const FRESH_TITLE = /^Untitled (material|image|notebook|folder|book)$/;
+const FRESH_TITLE = /^Untitled (material|image|notebook|folder|book|artifact)$/;
 
 /** The material's title, saved as you type (and flushed if you leave quickly). */
 export function TitleInput({

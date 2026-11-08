@@ -8,7 +8,7 @@ import {
   walkBlocks,
   type LooseBlock,
 } from "../shared/content";
-import { asBook, asFolder, asImagePage, asNotebook, markdownHeadings, notebookOutline, headingId } from "../shared/pages";
+import { asArtifact, asBook, asFolder, asImagePage, asNotebook, markdownHeadings, notebookOutline, headingId } from "../shared/pages";
 import { allDrawingText, allMaterialsWithContent, getTree, whereOf } from "./repo";
 
 const LIMIT = 40;
@@ -55,11 +55,26 @@ export function search(raw: string): SearchResult[] {
     const base = { courseId: m.courseId ?? undefined, materialId: m.id };
     const book = m.kind === "book" ? asBook(m.content) : null;
     if (hit(m.title) || (book && hit(book.meta.authors))) {
-      const label = book ? "Book" : m.kind !== "folder" ? "Material" : asFolder(m.content).source ? "Slides" : "Folder";
+      const label =
+        book ? "Book"
+        : m.kind === "artifact" ? "Artifact"
+        : m.kind !== "folder" ? "Material"
+        : asFolder(m.content).source ? "Slides"
+        : "Folder";
       const subtitle = book?.meta.authors ? `${where} · ${book.meta.authors}` : where;
       out.push({ kind: "Material", label, title: m.title, path: subtitle, ...base });
     }
     if (m.kind === "folder") continue;
+
+    if (m.kind === "artifact") {
+      const a = asArtifact(m.content);
+      if (a.description && hit(a.description)) {
+        out.push({ kind: "Text", label: "Description", title: snippet(a.description, q), path, ...base });
+      } else if (a.text && hit(a.text) && !hit(m.title)) {
+        out.push({ kind: "Text", label: "Page text", title: snippet(a.text, q), path, ...base });
+      }
+      continue;
+    }
 
     if (book) {
       book.highlights.forEach((h, i) => {

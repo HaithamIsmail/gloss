@@ -8,6 +8,7 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 - [Courses and the tree](#courses-and-the-tree)
 - [Materials](#materials)
 - [Versions and links](#versions-and-links)
+- [Artifacts](#artifacts)
 - [Drawings](#drawings)
 - [Trash](#trash)
 - [Backups and export](#backups-and-export)
@@ -35,7 +36,7 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 
 | Method & path | Body | Response |
 | --- | --- | --- |
-| `POST /api/courses/:id/materials` | `{ title?, kind?: "doc"\|"image"\|"notebook"\|"folder"\|"book", content?, parentId? }` | `201` Material · `404` · `400` (*That folder doesn't exist.*, *That folder is in another course.*, *Folders can't go inside other folders.*) |
+| `POST /api/courses/:id/materials` | `{ title?, kind?: "doc"\|"image"\|"notebook"\|"folder"\|"book"\|"artifact", content?, parentId? }` (for an artifact use `POST /api/courses/:id/artifacts`, which writes its files) | `201` Material · `404` · `400` (*That folder doesn't exist.*, *That folder is in another course.*, *Folders can't go inside other folders.*) |
 | `POST /api/materials` | `{ courseId?: string \| null, title?, kind?, content?, parentId? }` | `201` Material · `404` (unknown course) · `400` (*Only books can live outside a course.*) — with no `courseId`, a book in the library only |
 | `GET /api/materials/:id` | — | Material (`MaterialSummary` + `content`) · `404` |
 | `PATCH /api/materials/:id` | `{ title?, content?, position?, courseId?: string \| null, parentId? }` | MaterialSummary · `400` · `404` |
@@ -58,6 +59,30 @@ through `/book` don't).
 | `POST /api/materials/:id/versions/:versionId/restore` | Material (the current content is kept as a version first) |
 | `GET /api/materials/:id/backlinks` | `[{ materialId, title, kind, courseName, count }]` |
 | `GET /api/link-targets?q=` | `[{ kind: "material"\|"page"\|"region"\|"highlight", materialId, materialKind, annotationId?, blockId?, n?, page?, title, path }]` — up to 12 materials and (when `q` is given) 12 PDF book pages (a `q` ending in a number, e.g. `geron 50`; `annotationId` is `page:50`), 12 commented regions and 12 book highlights |
+
+## Artifacts
+
+HTML pages kept as files (`data/artifacts/<id>/`), shown in a sandboxed frame. See [Artifacts](artifacts.md) for the
+workflow and `curl` examples.
+
+| Method & path | Body | Response |
+| --- | --- | --- |
+| `POST /api/courses/:id/artifacts` | JSON `{ title?, description?, source?, parentId?, html, files?: [{ path, text }] }`, **or** multipart `files` (several) + `paths` (JSON array of relative paths, same order) + `title`, `description`, `parentId`, `source` fields | `201` Material (`kind: "artifact"`) · `400` (no entry page: include `index.html` or exactly one `.html`; bad path; a file over 16 MB) · `404` |
+| `POST /api/materials/:id/artifact` | `{ description?, source? }` | Material · `404` |
+| `GET /api/materials/:id/artifact/files` | — | `[{ path, size, updatedAt }]`, the entry page first · `404` |
+| `GET /api/materials/:id/artifact/file?path=` | — | the file as it is · `404` |
+| `PUT /api/materials/:id/artifact/file?path=` | the file's bytes (any content type, ≤ 16 MB) | Material (adds or replaces the file) · `400` · `404` |
+| `DELETE /api/materials/:id/artifact/file?path=` | — | Material · `400` (the entry page can't be removed) · `404` |
+| `GET /api/materials/:id/artifact/text?path=` | — | `{ path, text, size, updatedAt }` · `404` |
+| `POST /api/materials/:id/artifact/text` | `{ path, text }` | Material (writes the text file) · `400` · `404` |
+| `GET /api/materials/:id/artifact/history` | — | `[{ at, size }]` earlier `index.html` versions, newest first |
+| `GET /api/materials/:id/artifact/history/:at` | — | `{ at, text }` · `404` |
+| `POST /api/materials/:id/artifact/history/:at/restore` | — | Material (the current page goes to the history first) · `404` |
+| `GET /api/materials/:id/artifact/download` | — | zip of the artifact's files · `404` |
+
+An artifact's `content` is derived from its folder: `{ entry: "index.html", files: [{ path, size, updatedAt }],
+description, source?, text? }` (`text` = the page's visible words, for search). `PATCH /api/materials/:id` with
+`content` is not the way to change it; use the calls above.
 
 ## Drawings
 
@@ -138,6 +163,7 @@ Not API calls, but addresses the app understands: `/m/:id?ann=<highlight id>` op
 | Path | Serves |
 | --- | --- |
 | `/uploads/*` | `data/uploads` |
+| `/artifacts/:id/*` | an artifact's files (`data/artifacts/<id>`), HTML with a `Content-Security-Policy: sandbox …` header; checked by Host only, since sandboxed pages send `Origin: null` |
 | `/themes/builtin/*`, `/themes/user/*` | the app's `themes/` folder, `data/themes` |
 | `/excalidraw-assets/fonts/*` | Excalidraw's fonts |
 | `/pyodide/*` | the Pyodide runtime |

@@ -4,8 +4,11 @@ import { DatabaseSync } from "node:sqlite";
 
 export const DATA_DIR = path.resolve(process.env.DATA_DIR ?? "data");
 export const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
+/** One folder per artifact material: its HTML page and the files it uses. */
+export const ARTIFACT_DIR = path.join(DATA_DIR, "artifacts");
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
 
 export const db = new DatabaseSync(path.join(DATA_DIR, "study.db"));
 

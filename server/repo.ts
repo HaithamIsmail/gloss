@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { nanoid } from "nanoid";
 import type {
   Backlink,
@@ -41,7 +43,7 @@ import {
   regionsFor,
   type MaterialKind,
 } from "../shared/pages";
-import { db, tx } from "./db";
+import { ARTIFACT_DIR, db, tx } from "./db";
 
 /** A failed request with a message for the user (sent with this HTTP status). */
 export class UserError extends Error {
@@ -179,6 +181,7 @@ const DEFAULT_TITLES: Record<MaterialKind, string> = {
   notebook: "Untitled notebook",
   folder: "Untitled folder",
   book: "Untitled book",
+  artifact: "Untitled artifact",
 };
 
 /** A folder that can hold `kind` in `courseId` (folders don't nest). */
@@ -720,10 +723,30 @@ export function restoreTrash(trashId: string): { kind: TrashKind; itemId: string
   return { kind: t.kind, itemId: t.item_id };
 }
 
+/** An artifact's files live on disk; they go when its row does. */
+function removeArtifactFolders(ids: string[]) {
+  for (const id of ids) {
+    if (/^[\w-]+$/.test(id)) fs.rmSync(path.join(ARTIFACT_DIR, id), { recursive: true, force: true });
+  }
+}
+
+/** Deletes one material row for good (used to roll back a creation that failed half-way). */
+export function purgeMaterial(id: string) {
+  db.prepare(`DELETE FROM materials WHERE id = ?`).run(id);
+}
+
 /** Deletes for good. */
 export function purgeTrash(trashId: string): boolean {
   const exists = db.prepare(`SELECT 1 FROM trash WHERE id = ?`).get(trashId);
   if (!exists) return false;
+  const artifacts = (
+    db
+      .prepare(
+        `SELECT id FROM materials WHERE kind = 'artifact' AND (trash_id = ?
+           OR course_id IN (SELECT id FROM courses WHERE trash_id = ?))`,
+      )
+      .all(trashId, trashId) as { id: string }[]
+  ).map((r) => r.id);
   tx(() => {
     db.prepare(`DELETE FROM materials WHERE trash_id = ?`).run(trashId);
     db.prepare(`DELETE FROM courses WHERE trash_id = ?`).run(trashId);
@@ -736,6 +759,7 @@ export function purgeTrash(trashId: string): boolean {
       DELETE FROM trash WHERE kind = 'drawing' AND item_id NOT IN (SELECT id FROM drawings);
     `);
   });
+  removeArtifactFolders(artifacts);
   return true;
 }
 

@@ -17,6 +17,7 @@ import {
   type MentionProps,
 } from "../shared/content";
 import {
+  asArtifact,
   asBook,
   asFolder,
   asImagePage,
@@ -28,6 +29,7 @@ import {
 } from "../shared/pages";
 import { writeSnapshot } from "./backup";
 import { DATA_DIR, UPLOAD_DIR } from "./db";
+import { fileOf as artifactFile, listFiles as artifactFiles } from "./artifacts";
 import * as repo from "./repo";
 
 // ── Zip assembly ─────────────────────────────────────────────────────────
@@ -331,6 +333,22 @@ function bookMd(m: Material, ctx: Ctx): string {
   return `${lines.join("\n").trimEnd()}\n`;
 }
 
+/** An artifact: a note with its description, and the page's files copied into a folder beside it. */
+function artifactMd(m: Material, ctx: Ctx): string {
+  const a = asArtifact(m.content);
+  const dir = ctx.file.replace(/\.md$/, "");
+  const lines = [`# ${escapeMd(m.title || "Untitled")}`, ""];
+  if (a.description) lines.push(escapeMd(a.description), "");
+  const entry = artifactFiles(m.id).find((f) => f.path === a.entry);
+  if (entry) lines.push(`An HTML page: open [${escapeMd(a.entry)}](${encodeURI(`${path.posix.basename(dir)}/${a.entry}`)}) in a browser.`, "");
+  if (a.source) lines.push(`Source: ${escapeMd(a.source)}`, "");
+  for (const f of artifactFiles(m.id)) {
+    const file = artifactFile(m.id, f.path);
+    if (file) ctx.bundle.zip.addFile(file.abs, `${dir}/${f.path}`, { compress: !/\.(png|jpe?g|gif|webp|woff2?|zip|pdf)$/i.test(f.path) });
+  }
+  return `${lines.join("\n").trimEnd()}\n`;
+}
+
 const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
 const joinText = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join("") : (v ?? ""));
 
@@ -426,6 +444,8 @@ function writePlans(bundle: Bundle, plans: Plan[], files: Map<string, string>) {
       bundle.text(p.file, imagePageMd(m, ctx));
     } else if (m.kind === "book") {
       bundle.text(p.file, bookMd(m, ctx));
+    } else if (m.kind === "artifact") {
+      bundle.text(p.file, artifactMd(m, ctx));
     } else if (m.kind === "notebook") {
       const nb = asNotebook(m.content);
       bundle.text(p.file, notebookMd(m, nb, ctx));

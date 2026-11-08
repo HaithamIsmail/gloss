@@ -7,9 +7,9 @@ import {
   type OutlineItem,
 } from "./content";
 
-export type MaterialKind = "doc" | "image" | "notebook" | "folder" | "book";
+export type MaterialKind = "doc" | "image" | "notebook" | "folder" | "book" | "artifact";
 
-export const MATERIAL_KINDS: MaterialKind[] = ["doc", "image", "notebook", "folder", "book"];
+export const MATERIAL_KINDS: MaterialKind[] = ["doc", "image", "notebook", "folder", "book", "artifact"];
 
 export const isMaterialKind = (v: unknown): v is MaterialKind =>
   typeof v === "string" && (MATERIAL_KINDS as string[]).includes(v);
@@ -317,6 +317,93 @@ export function bookProgressLabel(b: BookContent): string {
   return `${Math.round(p.fraction * 100)}%`;
 }
 
+// ── Artifact (an HTML page with its files, shown in a sandboxed frame) ───
+
+/** One file of an artifact, by its path inside the artifact's folder. */
+export type ArtifactFile = { path: string; size: number; updatedAt: number };
+
+export type ArtifactContent = {
+  /** The page to show: a path in `files` ("index.html"). */
+  entry: string;
+  files: ArtifactFile[];
+  /** A sentence about the page, shown under its title. */
+  description: string;
+  /** Where it came from (a claude.ai/artifact link, a file name), if known. */
+  source?: string;
+  /** Visible text of the entry page, for search (derived on the server). */
+  text?: string;
+};
+
+export const ARTIFACT_ENTRY = "index.html";
+
+export function asArtifact(raw: unknown): ArtifactContent {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Partial<ArtifactContent>;
+  const files = (Array.isArray(o.files) ? o.files : [])
+    .filter((f): f is ArtifactFile => !!f && typeof f === "object" && typeof (f as ArtifactFile).path === "string")
+    .map((f) => ({
+      path: f.path,
+      size: typeof f.size === "number" ? f.size : 0,
+      updatedAt: typeof f.updatedAt === "number" ? f.updatedAt : 0,
+    }));
+  return {
+    entry: typeof o.entry === "string" && o.entry ? o.entry : ARTIFACT_ENTRY,
+    files,
+    description: str(o.description),
+    ...(typeof o.source === "string" && o.source ? { source: o.source } : {}),
+    ...(typeof o.text === "string" && o.text ? { text: o.text } : {}),
+  };
+}
+
+/** A safe relative path inside an artifact: forward slashes, no "..", no leading slash, no hidden segments. */
+export function artifactPath(p: string): string | null {
+  const clean = p.replace(/\\/g, "/").replace(/^\.?\/+/, "").trim();
+  if (!clean || clean.length > 300) return null;
+  const parts = clean.split("/");
+  if (parts.some((s) => !s || s === "." || s === ".." || s.startsWith(".") || /[<>:"|?*\x00-\x1f]/.test(s))) return null;
+  return parts.join("/");
+}
+
+/** Text files of an artifact are edited in the app and by agents; everything else is served as it is. */
+export const isArtifactText = (p: string) =>
+  /\.(html?|css|js|mjs|json|md|txt|svg|csv|xml|tsv|map)$/i.test(p);
+
+/** The <title> of an HTML page, or "". */
+export function htmlTitle(html: string): string {
+  const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+  return m ? decodeEntities(m[1]).replace(/\s+/g, " ").trim() : "";
+}
+
+/** The visible words of an HTML page (scripts, styles and tags dropped), capped, for search. */
+export function htmlText(html: string, max = 20000): string {
+  const text = html
+    .replace(/<(script|style|svg|noscript|template)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<[^>]+>/g, " ");
+  return decodeEntities(text).replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+const ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+  mdash: "—",
+  ndash: "–",
+  hellip: "…",
+};
+
+function decodeEntities(s: string): string {
+  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (all, e: string) => {
+    if (e[0] === "#") {
+      const code = e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return Number.isFinite(code) && code > 0 && code < 0x110000 ? String.fromCodePoint(code) : all;
+    }
+    return ENTITIES[e.toLowerCase()] ?? all;
+  });
+}
+
 // ── Per-kind helpers ─────────────────────────────────────────────────────
 
 export function defaultContentFor(kind: MaterialKind, newId: () => string): unknown {
@@ -324,6 +411,7 @@ export function defaultContentFor(kind: MaterialKind, newId: () => string): unkn
   if (kind === "folder") return {} satisfies FolderContent;
   if (kind === "notebook") return emptyNotebook();
   if (kind === "book") return asBook({});
+  if (kind === "artifact") return asArtifact({});
   return [
     { id: newId(), type: "heading", props: { level: 1 }, content: "Introduction", children: [] },
     { id: newId(), type: "paragraph", content: "", children: [] },
@@ -332,7 +420,7 @@ export function defaultContentFor(kind: MaterialKind, newId: () => string): unkn
 
 export function outlineFor(kind: MaterialKind, content: unknown): OutlineItem[] {
   if (kind === "notebook") return notebookOutline(asNotebook(content));
-  if (kind === "image" || kind === "folder" || kind === "book") return [];
+  if (kind === "image" || kind === "folder" || kind === "book" || kind === "artifact") return [];
   return buildOutline(Array.isArray(content) ? (content as LooseBlock[]) : []);
 }
 
@@ -340,7 +428,7 @@ export function outlineFor(kind: MaterialKind, content: unknown): OutlineItem[] 
 export function regionsFor(kind: MaterialKind, content: unknown): number {
   if (kind === "image") return asImagePage(content).annotations.length;
   if (kind === "book") return asBook(content).highlights.length;
-  if (kind === "notebook" || kind === "folder") return 0;
+  if (kind === "notebook" || kind === "folder" || kind === "artifact") return 0;
   return countRegions(Array.isArray(content) ? (content as LooseBlock[]) : []);
 }
 
@@ -350,5 +438,6 @@ export function normalizeContent(kind: MaterialKind, content: unknown): unknown 
   if (kind === "image") return asImagePage(content);
   if (kind === "folder") return asFolder(content);
   if (kind === "book") return asBook(content);
+  if (kind === "artifact") return asArtifact(content);
   return content;
 }

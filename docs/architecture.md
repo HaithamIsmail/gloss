@@ -45,6 +45,7 @@ server/
   kernels.ts        Local Jupyter kernels (ZeroMQ) bridged to WebSockets
   kernel_wrapper.py Starts a kernel and forwards interrupts (works on Windows)
   convert.ts        Slide deck → PDF with PowerPoint or LibreOffice
+  artifacts.ts      Artifacts: files in data/artifacts/<id>, history of the entry page, zip
   pptx_to_pdf.ps1   PowerPoint automation script
   security.ts       Local-only Host/Origin checks
   themes.ts         Theme files: listing, choosing, creating, duplicating, removing
@@ -65,6 +66,7 @@ src/
   slides/           PDF/slide import (pdf.js rendering, progress dialog)
   books/            The library: adding a book (metadata, cover), the PDF viewer (pdf.js) and
                     the EPUB viewer (foliate-js), highlight locations
+  artifacts/        Importing an artifact (file picker, relative paths)
   print/            Read-only rendering for print/PDF and version previews
   tour/             First-run guided tour
   theme/            Applying the chosen theme (adopted stylesheet, first-paint cache)
@@ -83,6 +85,7 @@ public/             Logo and icons
 ```
 Browser ──HTTP──▶ /api/*            Express routes ─▶ repo.ts ─▶ SQLite (data/study.db)
         ──HTTP──▶ /uploads/*        files in data/uploads
+        ──HTTP──▶ /artifacts/:id/*  an artifact's files in data/artifacts/<id> (sandboxed frame)
         ──WS────▶ /api/kernels/ws   kernels.ts ─ZeroMQ─▶ ipykernel (your Python env)
 Pyodide (Web Worker in the browser) runs browser-Python notebooks with no server involvement.
 ```
@@ -100,7 +103,7 @@ SQLite tables (`server/db.ts`):
 | Table | Holds |
 | --- | --- |
 | `courses` | id, name, code, position, timestamps, `deleted_at`, `trash_id` |
-| `materials` | id, course (`NULL` for a book in the library only), `parent_id` (folder), `kind` (doc/image/notebook/folder/book), title, `content` (JSON), derived `outline` and `regions` (highlights, for a book), position, timestamps, `deleted_at`, `trash_id` |
+| `materials` | id, course (`NULL` for a book in the library only), `parent_id` (folder), `kind` (doc/image/notebook/folder/book/artifact), title, `content` (JSON), derived `outline` and `regions` (highlights, for a book), position, timestamps, `deleted_at`, `trash_id` |
 | `drawings` | id, title, course, Excalidraw `scene` (JSON), SVG `preview`, searchable `text`, timestamps, `deleted_at`, `trash_id` |
 | `trash` | one row per delete: kind, item id, title, location, count of contained items, time |
 | `material_versions` | earlier contents of a material |
@@ -124,6 +127,7 @@ SQLite tables (`server/db.ts`):
 | Notebook | nbformat 4 (`cells`, `metadata`), each cell's `source` stored as one string; `metadata.study_kernel` is the chosen kernel |
 | Folder | `{ source?: { name, url, pdfUrl, type: "pdf" \| "slides" } }` |
 | Book | `{ file: { url, name, format: "pdf" \| "epub", size }, meta: { authors, year?, publisher?, description?, tags }, coverUrl, length, status: "unread" \| "reading" \| "done", progress: { loc, fraction, label?, updatedAt }, highlights: [{ id, loc, quote, note, at, createdAt }] }`. A `loc` is `{ kind: "pdf", page, rects: [{ p, x, y, w, h }] }` (fractions of the page) or `{ kind: "epub", cfi }`. |
+| Artifact | `{ entry: "index.html", files: [{ path, size, updatedAt }], description, source?, text? }` — derived from the folder `data/artifacts/<id>/` by `server/artifacts.ts → sync()` after every file change; `text` is the page's visible words for search. The files themselves are not in the database. |
 
 ## Key mechanisms
 
@@ -157,6 +161,15 @@ SQLite tables (`server/db.ts`):
   paths with the highlight id as `annotationId`; a mention to a book opens in a new tab. A book may have no course
   (`course_id NULL`): the tree lists such books in `library`, paths show "Library", and `findMaterial` (client)
   finds them without a course.
+- **Artifacts.** An artifact's files live in `data/artifacts/<id>/`; the material row only records the file list,
+  description and page text (`sync()` rereads the folder after every write). `/artifacts/:id/*` serves them with
+  `Cache-Control: no-cache`, `Access-Control-Allow-Origin: *` and, for HTML, a `Content-Security-Policy: sandbox …`
+  header; the route runs before the Origin check because a sandboxed page has an opaque origin (`Origin: null`),
+  which the API keeps refusing, so the page can't call `/api`. The client shows it in a plain `<iframe>` (the header does the sandboxing; a `sandbox` attribute is refused by some embedded browsers) and polls
+  the file list every 3 s while visible, reloading the frame when a file changed (that is how agent edits appear).
+  Saving `index.html` first copies the old one to `.history/<timestamp>.html` (newest 20 kept); the source panel
+  lists and restores them. Purging an artifact from the trash removes the folder. Versions in `material_versions`
+  are skipped for artifacts (the content is derived).
 - **Themes.** All colours, fonts, radii and rule weights are CSS variables in `src/styles/tokens.css`;
   `theme-hooks.css` says where the type and shape variables apply. A theme file overrides them (and may add rules).
   The chosen theme's CSS is fetched, its relative `url()`s made absolute, and put in `document.adoptedStyleSheets`,

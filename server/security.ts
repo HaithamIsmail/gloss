@@ -27,6 +27,16 @@ function originOk(origin: string | undefined) {
   }
 }
 
+/**
+ * Host check only, for files that sandboxed artifact pages fetch: those pages
+ * have an opaque origin, so browsers send `Origin: null`, which the full check
+ * would (rightly) refuse for the API.
+ */
+export const localHostOnly: RequestHandler = (req, res, next) => {
+  if (hostOk(req.headers.host)) return next();
+  res.status(403).json({ error: "Requests are only accepted from this computer." });
+};
+
 export const localOnly: RequestHandler = (req, res, next) => {
   if (hostOk(req.headers.host) && originOk(req.headers.origin)) return next();
   res.status(403).json({ error: "Requests are only accepted from this computer." });

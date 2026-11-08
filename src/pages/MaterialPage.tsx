@@ -9,6 +9,7 @@ import ImageView from "./material/ImageView";
 const DocView = lazy(() => import("./material/DocView"));
 const NotebookView = lazy(() => import("./material/NotebookView"));
 const BookView = lazy(() => import("./material/BookView"));
+const ArtifactView = lazy(() => import("./material/ArtifactView"));
 
 const loading = <div className="page page-narrow muted">Loading…</div>;
 
@@ -43,6 +44,8 @@ export function MaterialPage() {
         <NotebookView key={`${material.id}:${revision}`} material={material} />
       ) : material.kind === "book" ? (
         <BookView key={material.id} material={material} />
+      ) : material.kind === "artifact" ? (
+        <ArtifactView key={material.id} material={material} />
       ) : (
         <DocView key={`${material.id}:${revision}`} material={material} />
       )}

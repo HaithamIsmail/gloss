@@ -17,6 +17,7 @@ Everything Gloss can do, chapter by chapter.
 | [Slides, PDFs and folders](slides-and-pdfs.md) | Importing decks and PDFs, conversion, slide navigation, folders |
 | [The library: books](library.md) | PDFs and EPUBs kept whole, the library shelf, reading, highlights with notes, `@` links that open a book at a highlight, progress and status |
 | [Notebooks](notebooks.md) | Cells, running code, shortcuts, outputs, browser Python, your own environments, `.ipynb` |
+| [Artifacts](artifacts.md) | HTML pages from Claude or any tool, shown live in a sandbox, source editing with history, the API agents use to add and edit them |
 | [Canvas](canvas.md) | Drawings with Excalidraw, adding them to pages, drawing from a page |
 | [Trash and version history](trash-and-history.md) | Undo, restoring, deleting for good, earlier versions |
 | [Themes](themes.md) | Choosing a theme, the built-in themes, making your own (CSS variables, fonts, custom rules) |
@@ -55,6 +56,8 @@ A quick map from feature to chapter.
 - **Compute:** Jupyter-style notebooks · Python in the browser (Pyodide) · your own venv/conda/pyenv environments via
   ipykernel · rich outputs · `input()` · interrupt — [notebooks](notebooks.md)
 - **Draw:** Excalidraw canvas · drawings shared across pages · draw-and-insert from a page — [canvas](canvas.md)
+- **Embed:** artifacts — interactive HTML pages kept with their files, shown live in a sandboxed frame · source editor
+  with earlier versions · an API for agents to add and edit them — [artifacts](artifacts.md)
 - **Stay safe:** Trash with Undo and 30-day restore · version history with preview and restore · backup on every
   start · Back up now — [trash and history](trash-and-history.md), [backups](backups-and-export.md)
 - **Take it with you:** Markdown zip of a course or material · print / save as PDF · export everything —

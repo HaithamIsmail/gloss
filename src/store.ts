@@ -20,6 +20,8 @@ export type Prefs = {
   numbering: boolean;
   highlight: "marker" | "underline";
   showIndex: boolean;
+  /** The source panel on artifact pages. */
+  artifactSource?: boolean;
 };
 
 export type HoverSource = "text" | "image" | "comment" | "search";

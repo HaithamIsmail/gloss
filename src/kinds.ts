@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Folder, Image as ImageIcon, NotebookPen } from "lucide-react";
+import { AppWindow, BookOpen, FileText, Folder, Image as ImageIcon, NotebookPen } from "lucide-react";
 import type { MaterialKind } from "../shared/pages";
 
 export const KIND_ICON: Record<MaterialKind, typeof FileText> = {
@@ -7,6 +7,7 @@ export const KIND_ICON: Record<MaterialKind, typeof FileText> = {
   notebook: NotebookPen,
   folder: Folder,
   book: BookOpen,
+  artifact: AppWindow,
 };
 
 export const KIND_LABEL: Record<MaterialKind, string> = {
@@ -15,4 +16,5 @@ export const KIND_LABEL: Record<MaterialKind, string> = {
   notebook: "Notebook",
   folder: "Folder",
   book: "Book",
+  artifact: "Artifact",
 };

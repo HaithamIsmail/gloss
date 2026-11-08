@@ -121,8 +121,8 @@ function PageMenu({ material }: { material: MaterialSummary }) {
     setOpen(false);
     void fn();
   };
-  // Folders have no content of their own; a book's history is its file, not versions.
-  const isFolder = material.kind === "folder" || material.kind === "book";
+  // Folders have no content of their own; a book's history is its file, not versions; an artifact keeps its own.
+  const isFolder = material.kind === "folder" || material.kind === "book" || material.kind === "artifact";
 
   return (
     <div className="view-menu" ref={ref}>

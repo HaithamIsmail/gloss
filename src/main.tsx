@@ -5,6 +5,7 @@ import "./styles/app.css";
 import "./styles/editor.css";
 import "./styles/features.css";
 import "./styles/books.css";
+import "./styles/artifacts.css";
 import "./styles/theme-hooks.css";
 import "./styles/tour.css";
 

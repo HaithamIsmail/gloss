@@ -7,6 +7,7 @@ import multer from "multer";
 import { nanoid } from "nanoid";
 import { WebSocketServer } from "ws";
 import { UPLOAD_DIR } from "./db";
+import * as artifacts from "./artifacts";
 import { addCustomEnv, findEnv, installIpykernel, listEnvs } from "./envs";
 import { connectKernel, shutdownAllKernels } from "./kernels";
 import * as repo from "./repo";
@@ -14,7 +15,7 @@ import { presentationToPdf, slideConverter, SLIDE_EXTENSIONS } from "./convert";
 import { BACKUP_DIR, backupFile, backupNow, backupOnStart, listBackups } from "./backup";
 import { exportAll, exportCourse, exportMaterial, type ZipStream } from "./export";
 import { search } from "./search";
-import { isLocalUpgrade, localOnly } from "./security";
+import { isLocalUpgrade, localHostOnly, localOnly } from "./security";
 import {
   BUILTIN_THEMES,
   createTheme,
@@ -43,6 +44,30 @@ try {
 }
 
 const app = express();
+
+// Artifact files, for the sandboxed frame that shows them. Served before the
+// Origin check: a sandboxed page has an opaque origin and sends "Origin: null"
+// for the files it fetches. The page itself is sandboxed by header too, so it
+// stays isolated even when opened in its own tab, and it can't reach the API.
+const ARTIFACT_SANDBOX = "sandbox allow-scripts allow-forms allow-popups allow-modals allow-downloads allow-popups-to-escape-sandbox";
+app.use("/artifacts/:id", localHostOnly, (req, res) => {
+  let rel: string;
+  try {
+    rel = decodeURIComponent(req.path.replace(/^\/+/, ""));
+  } catch {
+    return void res.sendStatus(400);
+  }
+  const file = artifacts.servedFile(String(req.params.id), rel);
+  if (!file) return void res.sendStatus(404);
+  const headers: Record<string, string> = {
+    "Cache-Control": "no-cache",
+    "Access-Control-Allow-Origin": "*",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (/\.html?$/i.test(file)) headers["Content-Security-Policy"] = ARTIFACT_SANDBOX;
+  res.sendFile(file, { headers, cacheControl: false, dotfiles: "deny", acceptRanges: true });
+});
+
 app.use(localOnly);
 // Drawings carry pasted images inline, so scenes can be large.
 app.use(express.json({ limit: "60mb" }));
@@ -330,6 +355,139 @@ api.post("/courses/:id/slides", (req, res) => {
   res.status(201).json(folder);
 });
 
+// ── Artifacts: HTML pages kept as files, shown in a sandboxed frame ──────
+
+/**
+ * A new artifact in a course. Either JSON `{ title?, description?, source?, parentId?, html, files?: [{ path, text }] }`
+ * (how an agent adds one), or multipart `files` (with an optional `paths` JSON array of relative paths, in the same
+ * order) plus `title`, `description`, `parentId` fields (how the app imports one).
+ */
+api.post("/courses/:id/artifacts", upload.array("files", 512), (req, res, next) => {
+  const uploaded = (req.files as Express.Multer.File[] | undefined) ?? [];
+  const cleanup = () => uploaded.forEach((f) => fs.rm(f.path, { force: true }, () => undefined));
+  try {
+    let material;
+    if (uploaded.length) {
+      let paths: unknown = [];
+      try {
+        paths = JSON.parse(String(req.body?.paths ?? "[]"));
+      } catch {
+        paths = [];
+      }
+      const names = Array.isArray(paths) ? (paths as unknown[]) : [];
+      const files = uploaded.map((f, i) => ({
+        path: typeof names[i] === "string" && names[i] ? (names[i] as string) : f.originalname,
+        from: f.path,
+      }));
+      material = artifacts.createFromFiles(String(req.params.id), {
+        title: String(req.body?.title ?? "").trim().slice(0, 200),
+        description: String(req.body?.description ?? "").trim().slice(0, 2000),
+        source: String(req.body?.source ?? "").trim().slice(0, 500),
+        parentId: req.body?.parentId ? String(req.body.parentId) : null,
+        files,
+      });
+      cleanup();
+    } else {
+      material = artifacts.createArtifact(String(req.params.id), req.body ?? {});
+    }
+    if (!material) return void res.sendStatus(404);
+    res.status(201).json(material);
+  } catch (err) {
+    cleanup();
+    next(err);
+  }
+});
+
+/** Description and source, kept beside the files. */
+api.post("/materials/:id/artifact", (req, res) => {
+  const { description, source } = req.body ?? {};
+  const m = artifacts.sync(req.params.id, {
+    ...(typeof description === "string" ? { description: description.trim().slice(0, 2000) } : {}),
+    ...(typeof source === "string" ? { source: source.trim().slice(0, 500) } : {}),
+  });
+  if (!m) return void res.sendStatus(404);
+  res.json(m);
+});
+
+api.get("/materials/:id/artifact/files", (req, res) => {
+  const m = repo.getMaterial(req.params.id);
+  if (m?.kind !== "artifact") return void res.sendStatus(404);
+  res.json(artifacts.listFiles(req.params.id));
+});
+
+const pathParam = (req: express.Request) => String(req.query.path ?? "");
+
+/** One file as it is (`?path=index.html`). */
+api.get("/materials/:id/artifact/file", (req, res) => {
+  const file = artifacts.readFile(req.params.id, pathParam(req));
+  if (!file) return void res.sendStatus(404);
+  res.sendFile(file.abs, { headers: { "Cache-Control": "no-cache" }, cacheControl: false, dotfiles: "deny" });
+});
+
+/** Replaces or adds one file with the request body as it is (`?path=styles.css`). */
+api.put("/materials/:id/artifact/file", express.raw({ type: () => true, limit: artifacts.MAX_FILE }), (req, res) => {
+  const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+  const m = artifacts.writeFile(req.params.id, pathParam(req), body);
+  if (!m) return void res.sendStatus(404);
+  res.json(m);
+});
+
+api.delete("/materials/:id/artifact/file", (req, res) => {
+  const m = artifacts.deleteFile(req.params.id, pathParam(req));
+  if (!m) return void res.sendStatus(404);
+  res.json(m);
+});
+
+/** A text file as JSON `{ path, text, size, updatedAt }` (`?path=index.html`). */
+api.get("/materials/:id/artifact/text", (req, res) => {
+  const file = artifacts.readText(req.params.id, pathParam(req));
+  if (!file) return void res.sendStatus(404);
+  res.json(file);
+});
+
+/** Writes a text file from JSON `{ path, text }`: the form agents and the source editor use. */
+api.post("/materials/:id/artifact/text", (req, res) => {
+  const { path: p, text } = req.body ?? {};
+  if (typeof p !== "string" || typeof text !== "string") {
+    return void res.status(400).json({ error: "path and text are required" });
+  }
+  const m = artifacts.writeFile(req.params.id, p, text);
+  if (!m) return void res.sendStatus(404);
+  res.json(m);
+});
+
+/** Earlier states of the entry page, newest first. */
+api.get("/materials/:id/artifact/history", (req, res) => {
+  const m = repo.getMaterial(req.params.id);
+  if (m?.kind !== "artifact") return void res.sendStatus(404);
+  res.json(artifacts.listHistory(req.params.id));
+});
+
+api.get("/materials/:id/artifact/history/:at", (req, res) => {
+  const text = artifacts.readHistory(String(req.params.id), Number(req.params.at));
+  if (text === null) return void res.sendStatus(404);
+  res.json({ at: Number(req.params.at), text });
+});
+
+api.post("/materials/:id/artifact/history/:at/restore", (req, res) => {
+  const m = artifacts.restoreHistory(String(req.params.id), Number(req.params.at));
+  if (!m) return void res.sendStatus(404);
+  res.json(m);
+});
+
+/** The artifact's folder as a zip. */
+api.get("/materials/:id/artifact/download", (req, res) => {
+  const out = artifacts.zipOf(req.params.id);
+  if (!out) return void res.sendStatus(404);
+  const ascii = out.name.replace(/[^\x20-\x7e]/g, "-").replace(/["\\]/g, "");
+  res.set({
+    "Content-Type": "application/zip",
+    "Content-Disposition": `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(out.name)}`,
+  });
+  out.zip.outputStream.on("error", (err) => res.destroy(err));
+  out.zip.outputStream.pipe(res);
+});
+
 api.post("/uploads", upload.single("file"), (req, res) => {
   if (!req.file) return void res.status(400).json({ error: "no file" });
   res.status(201).json({ url: `/uploads/${req.file.filename}`, name: req.file.originalname });
@@ -390,7 +548,9 @@ if (isProd) {
   const dist = path.resolve("dist");
   if (fs.existsSync(dist)) {
     app.use(express.static(dist));
-    app.get(/^(?!\/(api|uploads|themes|excalidraw-assets|pyodide|pdfjs)\/).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
+    app.get(/^(?!\/(api|uploads|artifacts|themes|excalidraw-assets|pyodide|pdfjs)\/).*/, (_req, res) =>
+      res.sendFile(path.join(dist, "index.html")),
+    );
   }
 }
 

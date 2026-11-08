@@ -48,6 +48,7 @@ so the database backups plus that folder are a complete copy.
 
 - `study.db` — a fresh snapshot of the database,
 - `uploads/` — every image, PDF and file you added,
+- `artifacts/` — the files of your artifacts (one folder per artifact),
 - `notebooks/` — the working folders of your local notebook kernels,
 - `themes/` — your own themes,
 - anything else in `data/` except the backups folder.

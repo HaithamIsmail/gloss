@@ -1,5 +1,5 @@
 import type { OutlineItem } from "./content";
-import type { BookContent, BookHighlight, BookMeta, BookProgress, BookStatus, MaterialKind } from "./pages";
+import type { ArtifactContent, BookContent, BookHighlight, BookMeta, BookProgress, BookStatus, MaterialKind } from "./pages";
 
 export type MaterialSummary = {
   id: string;
@@ -87,6 +87,25 @@ export type BookPatch = {
   addHighlight?: BookHighlight;
   updateHighlight?: { id: string; note: string };
   removeHighlight?: string;
+};
+
+// ── Artifacts ────────────────────────────────────────────────────────────
+
+export type ArtifactMaterial = Material & { content: ArtifactContent };
+
+/** A text file of an artifact, for the source editor and for agents. */
+export type ArtifactFileText = { path: string; text: string; size: number; updatedAt: number };
+
+/** What `POST /api/courses/:id/artifacts` accepts as JSON: the page's HTML and any other text files. */
+export type NewArtifact = {
+  title?: string;
+  description?: string;
+  source?: string;
+  parentId?: string | null;
+  /** The entry page (index.html). */
+  html: string;
+  /** Other text files, by path ("styles.css", "data/points.json"). */
+  files?: { path: string; text: string }[];
 };
 
 // ── Trash, history, links, backups ───────────────────────────────────────

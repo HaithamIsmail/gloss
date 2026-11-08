@@ -26,7 +26,9 @@ function describe(t: TrashItem) {
           ? "Folder"
           : t.materialKind === "book"
             ? "Book"
-            : "Material";
+            : t.materialKind === "artifact"
+              ? "Artifact"
+              : "Material";
   const parts = [what];
   if (t.where) parts.push(`in ${t.where}`);
   if (t.contains) parts.push(t.kind === "course" ? plural(t.contains, "material") : plural(t.contains, "page"));

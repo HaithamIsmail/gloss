@@ -112,6 +112,18 @@ function MaterialThumb({ m }: { m: MaterialSummary }) {
       </span>
     );
   }
+  if (m.kind === "artifact") {
+    return (
+      <span className="material-thumb">
+        <span className="material-thumb-kind">
+          <Icon size={15} /> {KIND_LABEL[m.kind]}
+        </span>
+        <span className="material-thumb-outline">
+          <span className="muted">An HTML page</span>
+        </span>
+      </span>
+    );
+  }
   return (
     <span className="material-thumb">
       <span className="material-thumb-kind">

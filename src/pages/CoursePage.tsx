@@ -162,6 +162,8 @@ function CourseView({ course }: { course: Course }) {
                   ? plural(m.regions, "region")
                   : m.kind === "book"
                   ? plural(m.regions, "highlight")
+                  : m.kind === "artifact"
+                  ? "HTML page"
                   : [plural(sections, "section"), m.regions > 0 && plural(m.regions, "region")].filter(Boolean).join(" · ")}
               </span>
               <span className="material-actions">

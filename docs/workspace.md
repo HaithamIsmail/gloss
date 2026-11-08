@@ -18,7 +18,7 @@ and moving things.
 ## Courses and materials
 
 - A **course** has a name and a code (e.g. *Human Anatomy*, *ANAT 201*).
-- A course holds **materials**, of five kinds:
+- A course holds **materials**, of six kinds:
 
 | Kind | What it is | Guide |
 | --- | --- | --- |
@@ -27,6 +27,7 @@ and moving things.
 | **Notebook** | Jupyter-style Python code and markdown cells | [Notebooks](notebooks.md) |
 | **Folder** | Groups pages, images and notebooks (imported slides arrive as a folder) | [Slides and folders](slides-and-pdfs.md#folders) |
 | **Book** | A PDF or EPUB kept as it is, read in the app, with highlights and notes | [The library](library.md) |
+| **Artifact** | An HTML page (from Claude or any tool) shown live in a sandboxed frame, with its source editable | [Artifacts](artifacts.md) |
 
 - **Books** can also live outside any course, in the [Library](library.md) only.
 - **Drawings** live in the [Canvas](canvas.md) and can be attached to a course and placed on pages.
@@ -100,13 +101,16 @@ course opens a menu:
 | **Notebook** | *Python code and markdown cells, like Jupyter* |
 | **Folder** | *Group pages, images and notebooks together* |
 | **Import slides or PDF** | *A folder with one annotated page per slide (.pptx, .pdf)* — [details](slides-and-pdfs.md) |
+| **Add book** | *A PDF or EPUB kept as it is, read here, with highlights (.pdf, .epub)* — [details](library.md) |
+| **Add artifact** | *An HTML page from Claude or any tool, shown live and editable (.html + its files)* — [details](artifacts.md) |
 | **Import notebook** | *Open a .ipynb file as a new notebook* |
 
 The new material opens straight away with its title selected (*Untitled material*, *Untitled image*, …) so you can
 name it.
 
 Inside a folder, **Add to folder** (on the folder page) or the folder's **+** (sidebar) offers Page, Annotated image,
-Notebook and Import notebook — folders can't contain folders, and slide imports always make their own folder.
+Notebook, Add book, Add artifact and Import notebook — folders can't contain folders, and slide imports always make
+their own folder.
 
 ## Moving and organising
 

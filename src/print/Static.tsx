@@ -24,7 +24,7 @@ import { renderMarkdown } from "../notebook/render";
 export function StaticContent({ material, content }: { material: Pick<Material, "kind" | "title">; content: unknown }) {
   if (material.kind === "image") return <StaticImagePage content={content} />;
   if (material.kind === "notebook") return <StaticNotebook content={content} />;
-  if (material.kind === "folder" || material.kind === "book") return null;
+  if (material.kind === "folder" || material.kind === "book" || material.kind === "artifact") return null;
   return <StaticDoc blocks={Array.isArray(content) ? (content as LooseBlock[]) : []} />;
 }
 

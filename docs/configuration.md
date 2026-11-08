@@ -16,7 +16,7 @@ reaching it from another device.
 
 | Variable | Default | Effect |
 | --- | --- | --- |
-| `DATA_DIR` | `data` | Folder for the database, uploads, backups and notebook folders. Relative paths are resolved from the folder you start Gloss in. |
+| `DATA_DIR` | `data` | Folder for the database, uploads, artifacts, backups and notebook folders. Relative paths are resolved from the folder you start Gloss in. |
 | `SEED` | *(on)* | `SEED=0` starts a new installation empty instead of with the sample courses. Only matters on the very first launch. |
 | `API_PORT` | `3001` | Port of the API server in development (`npm run dev`); the Vite dev server forwards to it. |
 | `PORT` | `3001` | Port of the server in production (`npm start`). |
