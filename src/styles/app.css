@@ -648,7 +648,7 @@ kbd {
 
 .material-page {
   display: flex;
-  gap: 48px;
+  gap: 34px;
   padding: 0 40px 0 88px;
   max-width: 1320px;
 }
@@ -688,7 +688,44 @@ kbd {
   align-self: flex-start;
   max-height: calc(100vh - var(--topbar-h));
   overflow: auto;
-  padding: 52px 0 40px;
+  padding: 52px 0 40px 14px;
+}
+
+/* Drag the left edge to resize the index. */
+.index-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 1;
+}
+
+.index-resize::after {
+  content: "";
+  position: absolute;
+  top: 52px;
+  bottom: 40px;
+  left: 4px;
+  width: 2px;
+  background: transparent;
+  transition: background 0.12s;
+}
+
+.index-resize:hover::after,
+.index-resize:focus-visible::after,
+.index-panel.is-resizing .index-resize::after {
+  background: var(--color-neutral-500);
+}
+
+.index-resize:focus-visible {
+  outline: none;
+}
+
+.index-panel.is-resizing {
+  user-select: none;
 }
 
 .index-head {

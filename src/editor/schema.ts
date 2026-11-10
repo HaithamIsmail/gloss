@@ -12,9 +12,10 @@ import { DrawingBlock } from "./DrawingBlock";
 import { MathBlock, MathInline } from "./MathBlocks";
 import { Mention } from "./Mention";
 
-// The stock image block is replaced by the annotated one, which also receives
-// pasted and dropped image files (via its fileBlockAccept).
-const { image: _image, ...blocks } = defaultBlockSpecs;
+// The stock image block stays for plain pictures. The annotated one is listed
+// after it so it receives pasted and dropped image files: BlockNote hands a file
+// to the last block spec whose fileBlockAccept matches.
+const blocks = defaultBlockSpecs;
 
 export const schema = BlockNoteSchema.create({
   blockSpecs: {

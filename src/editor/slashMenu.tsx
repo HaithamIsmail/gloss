@@ -9,6 +9,7 @@ const RENAME: Record<string, { title: string; subtext: string; aliases: string[]
   heading: { title: "Section", subtext: "Heading 1 · numbered, listed in the index", aliases: ["h1", "section", "#"] },
   heading_2: { title: "Subsection", subtext: "Heading 2 · numbered, listed in the index", aliases: ["h2", "subsection", "##"] },
   heading_3: { title: "Heading", subtext: "Heading 3 · small, not in the index", aliases: ["h3", "###"] },
+  image: { title: "Image", subtext: "A plain picture, no regions", aliases: ["plain image", "picture", "photo"] },
 };
 
 /** Inserts `item` right after the last item of its group (or at the end). */
@@ -30,7 +31,7 @@ export function getSlashItems(editor: StudyEditor): DefaultReactSuggestionItem[]
     {
       title: "Annotated image",
       subtext: "Upload an image, mark regions, comment on them",
-      aliases: ["image", "img", "picture", "photo", "diagram", "figure", "annotate", "region"],
+      aliases: ["annotated", "image", "img", "diagram", "figure", "annotate", "region"],
       group: "Media",
       icon: <ImagePlus size={18} />,
       onItemClick: () => {

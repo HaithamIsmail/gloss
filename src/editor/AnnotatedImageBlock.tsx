@@ -1,6 +1,6 @@
 import type { BlockNoteEditor } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
-import { Columns2, ImageUp, Link2, LoaderCircle, Rows2 } from "lucide-react";
+import { Columns2, Image, ImageUp, Link2, LoaderCircle, Rows2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent } from "react";
 import { ANNOTATED_IMAGE, parseAnnotations, type Annotation } from "../../shared/content";
 import { plural, RegionComments } from "../annotate/RegionComments";
@@ -145,6 +145,18 @@ function AnnotatedImage({ block, editor }: { block: ImageBlock; editor: BlockNot
           >
             {layout === "side" ? <Rows2 size={15} /> : <Columns2 size={15} />}
           </button>
+          {url && !anns.length && (
+            <button
+              type="button"
+              className="block-icon-btn"
+              title="Make it a plain image (no regions)"
+              onClick={() =>
+                editor.updateBlock(block.id, { type: "image", props: { url, name, caption: "" } } as never)
+              }
+            >
+              <Image size={15} />
+            </button>
+          )}
           <button type="button" className="block-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
             <ImageUp size={14} strokeWidth={2.2} />
             <span>{url ? "Replace image" : "Upload image"}</span>

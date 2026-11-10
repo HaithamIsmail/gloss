@@ -14,6 +14,7 @@ import { api, keys, patchTreeMaterial, queryClient } from "../api";
 import { registerFlusher } from "../flush";
 import { useUI } from "../store";
 import { analyzeDoc } from "./analyze";
+import { AnnotateButton } from "./AnnotateButton";
 import { LinkRegionButton } from "./LinkRegionButton";
 import { MathButton } from "./MathButton";
 import { getMentionItems } from "./Mention";
@@ -219,6 +220,7 @@ export function MaterialEditor({ material }: { material: Material }) {
               {getFormattingToolbarItems()}
               <MathButton key="math" />
               <LinkRegionButton key="linkRegion" />
+              <AnnotateButton key="annotate" />
             </FormattingToolbar>
           )}
         />

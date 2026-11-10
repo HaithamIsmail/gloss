@@ -20,6 +20,8 @@ export type Prefs = {
   numbering: boolean;
   highlight: "marker" | "underline";
   showIndex: boolean;
+  /** Width of the index (table of contents) panel, in px. */
+  indexWidth?: number;
   /** The source panel on artifact pages. */
   artifactSource?: boolean;
 };

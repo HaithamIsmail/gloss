@@ -29,6 +29,9 @@ Annotated images come in two forms:
 - or type `/annotated image` (also `/image`, `/img`, `/figure`, `/diagram`), then click the empty block (*Drop an
   image here, paste one, or click to upload*), drop a file onto it, or use **Upload image**.
 
+**Just a picture?** `/image` adds a plain image instead. Its toolbar has **Annotate** to turn it into an annotated
+image, and an annotated image with no regions has *Make it a plain image* (picture icon) in its header.
+
 **Replacing the image:** **Replace image**, or drop another image onto the block. Regions are kept (they are stored as
 percentages of the image, so they stay in place on a same-shaped image).
 

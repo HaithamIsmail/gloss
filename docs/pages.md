@@ -56,7 +56,7 @@ Use `↑` `↓` and `Enter`, or click. On an empty line the block replaces the l
 | **Headings** | **Section** (Heading 1, numbered, in the index) · **Subsection** (Heading 2, numbered, in the index) · **Heading** (Heading 3, small, not in the index) |
 | **Basic blocks** | Quote · Toggle List · Numbered List · Bullet List · Check List · Paragraph · Code Block · Divider · **Callout** · **Formula** · **Inline formula** |
 | **Advanced** | Table |
-| **Media** | **Annotated image** · Video · Audio · File · **Drawing** |
+| **Media** | **Annotated image** · **Image** (plain) · Video · Audio · File · **Drawing** |
 | **Subheadings** | Toggle Heading 1 / 2 / 3 — collapsible headings (Toggle Heading 1 and 2 still count as Section and Subsection) |
 | **Others** | Emoji |
 
@@ -133,6 +133,8 @@ The **Index** on the right lists every Section and Subsection, live as you type:
 - it highlights the section you are reading as you scroll,
 - click an entry to scroll to it (it briefly flashes),
 - an empty page shows *Add a Section or Subsection (type / in the page) and it appears here.*,
+- drag its left edge to make it wider or narrower (double-click the edge to reset; with the edge focused, `←`/`→`
+  resize it too); the width is remembered,
 - it is hidden on windows narrower than about 1180 pixels.
 
 The **sidebar** shows the same outline under the open page; click an entry to jump there.
@@ -200,8 +202,11 @@ Every material shows **Linked from** with the pages that link to it.
 
 ## Images, drawings and files
 
-- **Images** — paste (`Ctrl V`) or drop an image anywhere in a page, or `/annotated image`. Every image is an
-  annotated image you can mark up: see [Annotated images](annotated-images.md).
+- **Annotated images** — paste (`Ctrl V`) or drop an image anywhere in a page, or `/annotated image`. You can mark
+  regions on them and comment: see [Annotated images](annotated-images.md).
+- **Plain images** — `/image` adds a picture without regions. Select it for its toolbar (caption, replace, rename,
+  download, delete, alignment) and drag its sides to resize it. **Annotate** in that toolbar turns it into an
+  annotated image; an annotated image with no regions yet has a *Make it a plain image* button in its header.
 - **Drawings** — `/drawing` opens the canvas over the page; see [Canvas](canvas.md#drawing-from-inside-a-page).
 - **Video, Audio, File** — from the / menu, or drop such a file into the page. Select the block for its toolbar:
   caption, replace, rename, download, delete, preview on/off.
