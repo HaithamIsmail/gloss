@@ -95,6 +95,9 @@ type UIState = {
   /** Bumped to re-open the current material from its saved state (after restoring a version). */
   revision: number;
   reloadMaterial: () => void;
+  /** Bumped per material when it changed elsewhere (an agent's edit), to remount its view. */
+  revisions: Record<string, number>;
+  bumpMaterial: (id: string) => void;
 };
 
 const emptyDoc: DocInfo = { materialId: null, outline: [], regions: [], numbers: {}, linkCounts: {} };
@@ -145,6 +148,8 @@ export const useUI = create<UIState>()(
 
       revision: 0,
       reloadMaterial: () => set((s) => ({ revision: s.revision + 1 })),
+      revisions: {},
+      bumpMaterial: (id) => set((s) => ({ revisions: { ...s.revisions, [id]: (s.revisions[id] ?? 0) + 1 } })),
     }),
     {
       name: "study-ws-ui",

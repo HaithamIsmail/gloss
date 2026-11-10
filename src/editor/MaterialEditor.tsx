@@ -10,9 +10,10 @@ import {
 import { useCallback, useEffect, useRef, type KeyboardEvent, type MouseEvent } from "react";
 import type { Material } from "../../shared/api";
 import type { LooseBlock } from "../../shared/content";
-import { api, keys, patchTreeMaterial, queryClient } from "../api";
+import { api, ApiError, keys, patchTreeMaterial, queryClient } from "../api";
 import { registerFlusher } from "../flush";
 import { useUI } from "../store";
+import { baseOf, registerSaver, reloadMaterial } from "../sync";
 import { analyzeDoc } from "./analyze";
 import { AnnotateButton } from "./AnnotateButton";
 import { LinkRegionButton } from "./LinkRegionButton";
@@ -103,10 +104,16 @@ export function MaterialEditor({ material }: { material: Material }) {
     queryClient.setQueryData<Material>(keys.material(material.id), (m) => m && { ...m, content });
     setSave("saving");
     try {
-      const summary = await api.updateMaterial(material.id, { content });
+      const summary = await api.updateMaterial(material.id, { content, baseUpdatedAt: baseOf(material.id) });
       patchTreeMaterial(summary);
       if (!dirty.current) setSave("saved");
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        // Changed elsewhere since this tab loaded it: show that instead of overwriting it.
+        setSave("idle");
+        void reloadMaterial(material.id, "This page was changed by an agent. Your last edit wasn't saved.");
+        return;
+      }
       console.error(err);
       dirty.current = true;
       setSave("error");
@@ -122,6 +129,14 @@ export function MaterialEditor({ material }: { material: Material }) {
   }, [analyze, flush, setSave]);
 
   useEffect(() => registerFlusher(flush), [flush]);
+  useEffect(
+    () =>
+      registerSaver(material.id, () => {
+        window.clearTimeout(timer.current);
+        dirty.current = false;
+      }),
+    [material.id],
+  );
 
   useEffect(() => {
     // Best-effort save when the tab closes with unsaved edits.
@@ -130,7 +145,7 @@ export function MaterialEditor({ material }: { material: Material }) {
       void fetch(`/api/materials/${material.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: editor.document }),
+        body: JSON.stringify({ content: editor.document, baseUpdatedAt: baseOf(material.id) }),
         keepalive: true,
       });
     };

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Material, Tree } from "../../../shared/api";
-import { api, keys, patchTreeMaterial, queryClient } from "../../api";
+import { api, ApiError, keys, patchTreeMaterial, queryClient } from "../../api";
 import { registerFlusher } from "../../flush";
 import { useUI } from "../../store";
+import { baseOf, registerSaver, reloadMaterial } from "../../sync";
 
 const FRESH_TITLE = /^Untitled (material|image|notebook|folder|book|artifact)$/;
 
@@ -86,10 +87,16 @@ export function useContentSaver(materialId: string, delay = 700) {
     queryClient.setQueryData<Material>(keys.material(materialId), (m) => m && { ...m, content });
     setSave("saving");
     try {
-      const summary = await api.updateMaterial(materialId, { content });
+      const summary = await api.updateMaterial(materialId, { content, baseUpdatedAt: baseOf(materialId) });
       patchTreeMaterial(summary);
       if (pending.current === undefined) setSave("saved");
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        // Changed elsewhere since this tab loaded it: show that instead of overwriting it.
+        setSave("idle");
+        void reloadMaterial(materialId, "This was changed by an agent. Your last edit wasn't saved.");
+        return;
+      }
       console.error(err);
       if (pending.current === undefined) pending.current = content;
       setSave("error");
@@ -107,6 +114,14 @@ export function useContentSaver(materialId: string, delay = 700) {
   );
 
   useEffect(() => registerFlusher(flush), [flush]);
+  useEffect(
+    () =>
+      registerSaver(materialId, () => {
+        window.clearTimeout(timer.current);
+        pending.current = undefined;
+      }),
+    [materialId],
+  );
 
   useEffect(() => {
     // Best-effort save when the tab closes with unsaved edits.
@@ -115,7 +130,7 @@ export function useContentSaver(materialId: string, delay = 700) {
       void fetch(`/api/materials/${materialId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: pending.current }),
+        body: JSON.stringify({ content: pending.current, baseUpdatedAt: baseOf(materialId) }),
         keepalive: true,
       });
     };

@@ -1263,6 +1263,31 @@ a.btn-secondary {
   gap: 3px;
 }
 
+.agents-snippet {
+  margin: 12px 0;
+  border: var(--rule);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.agents-snippet-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 12px;
+  border-bottom: var(--rule);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.agents-snippet pre {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font: 13px/1.5 var(--font-mono);
+  white-space: pre;
+}
+
 .icon-btn.inline {
   display: inline-flex;
   width: 24px;

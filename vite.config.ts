@@ -11,6 +11,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": { target: api, ws: true },
+      "/mcp": api,
       "/uploads": api,
       "/artifacts": api,
       "/themes": api,

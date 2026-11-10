@@ -15,6 +15,7 @@ import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { TrashPage } from "./pages/TrashPage";
 import { useUI } from "./store";
+import { startEvents } from "./sync";
 
 // The editor is the heavy part of the bundle; load it with the first material opened.
 const MaterialPage = lazy(() => import("./pages/MaterialPage").then((m) => ({ default: m.MaterialPage })));
@@ -28,6 +29,9 @@ function Layout() {
   const sidebarOpen = useUI((s) => s.sidebarOpen);
   const historyOpen = useUI((s) => !!s.historyFor);
   const { pathname } = useLocation();
+
+  // Edits made by agents arrive as events; open pages reload when theirs changes.
+  useEffect(() => startEvents(), []);
 
   // On phones the sidebar overlays the page; get it out of the way after navigating.
   useEffect(() => {

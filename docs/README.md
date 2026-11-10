@@ -18,6 +18,7 @@ Everything Gloss can do, chapter by chapter.
 | [The library: books](library.md) | PDFs and EPUBs kept whole, the library shelf, reading, highlights with notes, `@` links that open a book at a highlight, progress and status |
 | [Notebooks](notebooks.md) | Cells, running code, shortcuts, outputs, browser Python, your own environments, `.ipynb` |
 | [Artifacts](artifacts.md) | HTML pages from Claude or any tool, shown live in a sandbox, source editing with history, the API agents use to add and edit them |
+| [Agents (MCP)](mcp.md) | Connecting Claude Code or another agent, the tools it gets, pages as Markdown, editing blocks, live updates, undoing its work |
 | [Canvas](canvas.md) | Drawings with Excalidraw, adding them to pages, drawing from a page |
 | [Trash and version history](trash-and-history.md) | Undo, restoring, deleting for good, earlier versions |
 | [Themes](themes.md) | Choosing a theme, the built-in themes, making your own (CSS variables, fonts, custom rules) |
@@ -66,4 +67,6 @@ A quick map from feature to chapter.
   with live reload — [themes](themes.md)
 - **Learn it:** first-run guided tour with Skip, replayable from the sidebar —
   [getting started](getting-started.md#first-launch-and-the-guided-tour)
+- **Work with agents:** connect Claude Code or any MCP client to read and write courses, pages, notebooks and
+  artifacts · every edit versioned, deletes to the trash, open tabs update live — [agents (MCP)](mcp.md)
 - **Run it your way:** local-only by default · configurable data folder and ports — [configuration](configuration.md)

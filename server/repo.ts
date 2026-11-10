@@ -263,7 +263,8 @@ export function updateMaterial(
     courseId?: string | null;
     parentId?: string | null;
   },
-  opts: { snapshot?: "auto" | "skip" } = {},
+  /** "force" keeps the previous content as a version whatever the gap (edits by agents, so History can undo each one). */
+  opts: { snapshot?: "auto" | "skip" | "force" } = {},
 ): MaterialSummary | null {
   return tx(() => {
     const row = materialRow(id, true);
@@ -276,7 +277,8 @@ export function updateMaterial(
       const json = JSON.stringify(content);
       if (json !== row.content) {
         const last = lastSnapshotAt(id);
-        if (opts.snapshot !== "skip" && row.content && (!last || now - last >= VERSION_GAP_MS)) {
+        const due = opts.snapshot === "force" || (opts.snapshot !== "skip" && (!last || now - last >= VERSION_GAP_MS));
+        if (due && row.content) {
           snapshot(id, row.title, row.content, now);
         }
         db.prepare(`UPDATE materials SET content = ?, outline = ?, regions = ?, updated_at = ? WHERE id = ?`).run(

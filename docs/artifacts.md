@@ -71,7 +71,13 @@ A file other than `index.html` can be removed with the bin icon in the source ba
 ## Agents: adding and editing artifacts by API
 
 The point of artifacts is that an agent — Claude Code at your side, a script, a scheduled job — can build a page
-for a course and keep improving it. The whole surface is a few HTTP calls on the local server (port **3001** when
+for a course and keep improving it.
+
+**The easier route is MCP.** Connect the agent to Gloss once ([Agents (MCP)](mcp.md)) and it gets `create_artifact`,
+`read_artifact_file`, `write_artifact_file` and `delete_artifact_file` as tools, with no `curl` or ids to copy by
+hand. The HTTP calls below do the same for scripts.
+
+The whole surface is a few HTTP calls on the local server (port **3001** when
 started with `start.bat` / `npm run app`; `/api` is proxied in development too). Requests must come from this
 computer, like the rest of the [API](api.md).
 

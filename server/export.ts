@@ -94,7 +94,14 @@ const rel = (from: string, to: string) => encodeURI(path.posix.relative(path.pos
 // ── Markdown ─────────────────────────────────────────────────────────────
 
 type Ctx = {
-  bundle: Bundle;
+  /** The zip being written; null for Markdown handed to agents (asset URLs stay as they are). */
+  bundle: Bundle | null;
+  /**
+   * Markdown for agents (MCP): headings unshifted and unnumbered, mentions as /m/ links, linked
+   * passages as <mark>, images and drawings by URL, and (with `ids`) each block's id in a comment
+   * before it, so the result parses back into the same blocks (server/markdown.ts).
+   */
+  agent?: { ids: boolean };
   /** Path of the file being written, inside the zip. */
   file: string;
   /** Exported material id → its file, for "@" links. */
@@ -106,9 +113,28 @@ type Ctx = {
   nextRegion: number;
 };
 
-const escapeMd = (s: string) => s.replace(/([\\`*_[\]<>$])/g, "\\$1");
+const escapeMd = (s: string) => s.replace(/([\\`*_[\]<>$~])/g, "\\$1");
+
+/** Characters that would start a heading, quote, list or rule at the start of a line. */
+const escapeLineStarts = (s: string) =>
+  s.replace(/^( *)(\d+(?=[.)])|[#>+=-])/gm, (_all, sp: string, c: string) => (/\d/.test(c) ? `${sp}${c}\\` : `${sp}\\${c}`));
+
+const linkHref = (href: string) => (/[\s()<>]/.test(href) ? `<${href.replace(/[<>]/g, encodeURIComponent)}>` : href);
+
+/** The app's address of a material (and one region in it); the Markdown parser reads it back as a mention. */
+export function mentionHref(p: Partial<MentionProps>): string {
+  const q = new URLSearchParams();
+  if (p.annotationId) q.set("ann", p.annotationId);
+  if (p.blockId) q.set("block", p.blockId);
+  const qs = q.toString();
+  return `/m/${p.targetId ?? ""}${qs ? `?${qs}` : ""}`;
+}
+
+/** Where a drawing's preview is served; an image with this URL parses back into a drawing block. */
+export const drawingPreviewUrl = (id: string) => `/api/drawings/${id}/preview.svg`;
 
 function asset(ctx: Ctx, url: string): string {
+  if (!ctx.bundle) return url;
   const p = ctx.bundle.upload(url);
   return p ? rel(ctx.file, p) : url;
 }
@@ -119,8 +145,12 @@ function inlineMd(content: unknown, ctx: Ctx): string {
   let out = "";
   let openRegion: string | null = null;
   const closeRegion = () => {
-    const n = openRegion ? ctx.regionNums.get(openRegion) : undefined;
-    if (n) out += `<sup>[${n}]</sup>`;
+    if (ctx.agent) {
+      if (openRegion) out += "</mark>";
+    } else {
+      const n = openRegion ? ctx.regionNums.get(openRegion) : undefined;
+      if (n) out += `<sup>[${n}]</sup>`;
+    }
     openRegion = null;
   };
   for (const raw of content) {
@@ -129,10 +159,11 @@ function inlineMd(content: unknown, ctx: Ctx): string {
     const region = typeof styles.annotation === "string" && styles.annotation ? styles.annotation : null;
     if (region !== openRegion) closeRegion();
     if (item.type === "text") {
+      if (ctx.agent && region && region !== openRegion) out += `<mark data-region="${region.replace(/["<>]/g, "")}">`;
       out += styled(String(item.text ?? ""), styles);
       openRegion = region;
     } else if (item.type === "link") {
-      out += `[${inlineMd(item.content, ctx)}](${String(item.href ?? "")})`;
+      out += `[${inlineMd(item.content, ctx)}](${linkHref(String(item.href ?? ""))})`;
     } else if (item.type === "math") {
       const latex = String((item.props as { latex?: string })?.latex ?? "").trim();
       if (latex) out += `$${latex}$`;
@@ -140,7 +171,8 @@ function inlineMd(content: unknown, ctx: Ctx): string {
       const p = (item.props ?? {}) as Partial<MentionProps>;
       const target = p.targetId ? ctx.files.get(p.targetId) : undefined;
       const label = escapeMd(`@${p.label || "link"}`);
-      out += target ? `[${label}](${rel(ctx.file, target)})` : `**${label}**`;
+      if (ctx.agent && p.targetId) out += `[${label}](${mentionHref(p)})`;
+      else out += target ? `[${label}](${rel(ctx.file, target)})` : `**${label}**`;
     } else {
       out += escapeMd(contentText(item));
     }
@@ -161,7 +193,8 @@ function styled(text: string, styles: Record<string, unknown>): string {
   } else {
     s = escapeMd(core);
     if (styles.strike) s = `~~${s}~~`;
-    if (styles.italic) s = `_${s}_`;
+    // "*", not "_": an underscore can't close emphasis right before a letter ("*foo*bar").
+    if (styles.italic) s = `*${s}*`;
     if (styles.bold) s = `**${s}**`;
     if (styles.underline) s = `<u>${s}</u>`;
   }
@@ -196,6 +229,7 @@ function blocksMd(blocks: LooseBlock[], ctx: Ctx): string {
   for (const b of blocks) {
     listNo = b.type === "numberedListItem" ? listNo + 1 : 0;
     let md = blockMd(b, ctx, listNo);
+    if (ctx.agent?.ids && b.id) md = `<!-- id: ${b.id} -->\n${md}`;
     if (b.children?.length) {
       const kids = blocksMd(b.children, ctx);
       const pad = b.type === "numberedListItem" ? " ".repeat(`${listNo}. `.length) : "  ";
@@ -219,10 +253,11 @@ const isListItem = (b: LooseBlock) => /^(bulletListItem|numberedListItem|checkLi
 
 function blockMd(b: LooseBlock, ctx: Ctx, listNo: number): string {
   const p = (b.props ?? {}) as Record<string, unknown>;
-  const text = () => inlineMd(b.content, ctx);
+  const text = () => escapeLineStarts(inlineMd(b.content, ctx));
   switch (b.type) {
     case "heading": {
       const level = Number(p.level ?? 1);
+      if (ctx.agent) return `${"#".repeat(Math.min(6, level))} ${text().replace(/ {2}\n/g, " ")}`;
       const num = ctx.headingNums.get(b.id);
       return `${"#".repeat(Math.min(6, level + 1))} ${num ? `${num} ` : ""}${text()}`;
     }
@@ -247,7 +282,15 @@ function blockMd(b: LooseBlock, ctx: Ctx, listNo: number): string {
       return tableMd(b.content, ctx);
     case ANNOTATED_IMAGE: {
       const name = String(p.name ?? "") || "image";
-      const lines = [`![${escapeMd(name)}](${asset(ctx, String(p.url ?? ""))})`];
+      const img = `![${escapeMd(name)}](${linkHref(asset(ctx, String(p.url ?? "")))})`;
+      if (ctx.agent) {
+        // Regions are drawn in the app. Agents see them; the block keeps them as long as its URL stays.
+        const regions = parseAnnotations(p.annotations);
+        if (!regions.length) return img;
+        const list = regions.map((a, i) => commentItem(i + 1, a.comment.replace(/--/g, "- -"))).join("\n");
+        return `${img}\n<!-- annotated image, regions (edited in the app):\n${list}\n-->`;
+      }
+      const lines = [img];
       const comments = parseAnnotations(p.annotations).map((a) => commentItem(ctx.nextRegion++, a.comment));
       if (comments.length) lines.push("", ...comments);
       return lines.join("\n");
@@ -255,7 +298,9 @@ function blockMd(b: LooseBlock, ctx: Ctx, listNo: number): string {
     case DRAWING: {
       const id = String(p.drawingId ?? "");
       const d = id ? repo.getDrawingSummary(id) : null;
+      if (ctx.agent) return id ? `![${escapeMd(d?.title || "Drawing")}](${drawingPreviewUrl(id)})` : "";
       if (!d) return "_(drawing)_";
+      if (!ctx.bundle) return `_Drawing: ${escapeMd(d.title)}_`;
       const file = ctx.bundle.buffer(`drawing:${id}`, `drawing-${id}.svg`, () => {
         const svg = repo.getDrawingPreview(id)?.svg;
         return svg ? Buffer.from(svg, "utf8") : null;
@@ -269,10 +314,14 @@ function blockMd(b: LooseBlock, ctx: Ctx, listNo: number): string {
       const url = String(p.url ?? "");
       const name = escapeMd(String(p.name || p.caption || "file"));
       if (!url) return "";
-      return b.type === "image" ? `![${name}](${asset(ctx, url)})` : `[${name}](${asset(ctx, url)})`;
+      const href = linkHref(asset(ctx, url));
+      return b.type === "image" ? `![${name}](${href})` : `[${name}](${href})`;
     }
-    default:
-      return text();
+    default: {
+      const t = text();
+      // An empty paragraph would vanish between blank lines; agents get a mark that parses back.
+      return !t && ctx.agent && b.type === "paragraph" ? "<p></p>" : t;
+    }
   }
 }
 
@@ -287,6 +336,23 @@ function tableMd(content: unknown, ctx: Ctx): string {
   const width = Math.max(...rows.map((r) => r.length));
   const line = (cells: string[]) => `| ${Array.from({ length: width }, (_, i) => cells[i] ?? "").join(" | ")} |`;
   return [line(rows[0]), line(Array(width).fill("---")), ...rows.slice(1).map(line)].join("\n");
+}
+
+/**
+ * A page's blocks as the Markdown agents read and write (see server/markdown.ts for the way back).
+ * With `ids`, each block (nested ones too) is preceded by `<!-- id: … -->`.
+ */
+export function blocksToMarkdown(blocks: LooseBlock[], opts: { ids?: boolean } = {}): string {
+  const ctx: Ctx = {
+    bundle: null,
+    agent: { ids: !!opts.ids },
+    file: "",
+    files: new Map(),
+    regionNums: new Map(),
+    headingNums: new Map(),
+    nextRegion: 1,
+  };
+  return blocksMd(blocks, ctx);
 }
 
 function docMd(m: Material, ctx: Ctx): string {
@@ -344,7 +410,7 @@ function artifactMd(m: Material, ctx: Ctx): string {
   if (a.source) lines.push(`Source: ${escapeMd(a.source)}`, "");
   for (const f of artifactFiles(m.id)) {
     const file = artifactFile(m.id, f.path);
-    if (file) ctx.bundle.zip.addFile(file.abs, `${dir}/${f.path}`, { compress: !/\.(png|jpe?g|gif|webp|woff2?|zip|pdf)$/i.test(f.path) });
+    if (file) ctx.bundle?.zip.addFile(file.abs, `${dir}/${f.path}`, { compress: !/\.(png|jpe?g|gif|webp|woff2?|zip|pdf)$/i.test(f.path) });
   }
   return `${lines.join("\n").trimEnd()}\n`;
 }
@@ -367,10 +433,10 @@ function notebookMd(m: Material, nb: NotebookContent, ctx: Ctx): string {
       if (data["image/png"] || data["image/jpeg"]) {
         const png = !!data["image/png"];
         const b64 = joinText(data[png ? "image/png" : "image/jpeg"]).replace(/\s/g, "");
-        const file = ctx.bundle.buffer(key, `${m.id}-${ci}-${oi}.${png ? "png" : "jpg"}`, () => Buffer.from(b64, "base64"));
+        const file = ctx.bundle?.buffer(key, `${m.id}-${ci}-${oi}.${png ? "png" : "jpg"}`, () => Buffer.from(b64, "base64"));
         if (file) out.push(`![output](${rel(ctx.file, file)})`);
       } else if (data["image/svg+xml"]) {
-        const file = ctx.bundle.buffer(key, `${m.id}-${ci}-${oi}.svg`, () => Buffer.from(joinText(data["image/svg+xml"]), "utf8"));
+        const file = ctx.bundle?.buffer(key, `${m.id}-${ci}-${oi}.svg`, () => Buffer.from(joinText(data["image/svg+xml"]), "utf8"));
         if (file) out.push(`![output](${rel(ctx.file, file)})`);
       } else if (data["text/markdown"]) {
         out.push(joinText(data["text/markdown"]));

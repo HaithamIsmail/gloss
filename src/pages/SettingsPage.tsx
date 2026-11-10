@@ -1,6 +1,6 @@
 import tokensCss from "../styles/tokens.css?raw";
 
-import { Check, Copy, ExternalLink, FilePlus2, FolderOpen, Palette, Plus, Trash2, Upload } from "lucide-react";
+import { Bot, Check, Copy, ExternalLink, FilePlus2, FolderOpen, Palette, Plus, Trash2, Upload } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { NavLink, useParams } from "react-router";
 import type { ThemeInfo, ThemeList } from "../../shared/api";
@@ -8,8 +8,12 @@ import { api, keys, queryClient, useThemes } from "../api";
 import { toast } from "../toast";
 
 const DOCS = "https://github.com/HaithamIsmail/gloss/blob/main/docs/themes.md";
+const MCP_DOCS = "https://github.com/HaithamIsmail/gloss/blob/main/docs/mcp.md";
 
-const TABS = [{ id: "themes", label: "Themes", icon: Palette }] as const;
+const TABS = [
+  { id: "themes", label: "Themes", icon: Palette },
+  { id: "agents", label: "Agents (MCP)", icon: Bot },
+] as const;
 
 export function SettingsPage() {
   const { tab = "themes" } = useParams();
@@ -25,7 +29,67 @@ export function SettingsPage() {
         ))}
       </nav>
       {tab === "themes" && <ThemesTab />}
+      {tab === "agents" && <AgentsTab />}
     </div>
+  );
+}
+
+// ── Agents (MCP) ─────────────────────────────────────────────────────────
+
+/** A command or config to paste elsewhere, with a copy button. */
+function Snippet({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="agents-snippet">
+      <div className="agents-snippet-head">
+        <span className="grow">{label}</span>
+        <button
+          type="button"
+          className="icon-btn inline"
+          title="Copy"
+          onClick={() => void navigator.clipboard.writeText(text).then(() => toast("Copied"))}
+        >
+          <Copy size={13} />
+        </button>
+      </div>
+      <pre>{text}</pre>
+    </div>
+  );
+}
+
+function AgentsTab() {
+  const url = `${window.location.origin}/mcp`;
+  const json = JSON.stringify({ mcpServers: { gloss: { type: "http", url } } }, null, 2);
+  return (
+    <section className="agents-tab">
+      <p className="page-lede">
+        AI agents such as Claude Code or Claude Desktop can read your courses and add or edit pages, notebooks and
+        artifacts through the Model Context Protocol. Every edit they make is kept in History, and what they delete goes
+        to the Trash.
+      </p>
+      <div className="theme-howto">
+        <h2>Connect an agent</h2>
+        <p>
+          Endpoint: <code>{url}</code>{" "}
+          <button
+            type="button"
+            className="icon-btn inline"
+            title="Copy the address"
+            onClick={() => void navigator.clipboard.writeText(url).then(() => toast("Address copied"))}
+          >
+            <Copy size={13} />
+          </button>
+        </p>
+        <Snippet label="Claude Code" text={`claude mcp add --transport http gloss ${url}`} />
+        <Snippet label="Other agents (JSON config)" text={json} />
+        <p className="muted">
+          Gloss must be running, and only agents on this computer can connect. Start Gloss with <code>MCP=off</code> to
+          turn the endpoint off.{" "}
+          <a href={MCP_DOCS} target="_blank" rel="noreferrer">
+            Agents guide <ExternalLink size={12} />
+          </a>
+        </p>
+      </div>
+    </section>
   );
 }
 

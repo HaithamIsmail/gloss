@@ -48,6 +48,11 @@ server/
   artifacts.ts      Artifacts: files in data/artifacts/<id>, history of the entry page, zip
   pptx_to_pdf.ps1   PowerPoint automation script
   security.ts       Local-only Host/Origin checks
+  mcp.ts            The MCP endpoint (/mcp): server factory, instructions, request handler
+  mcp/              MCP tools: read.ts (tree, search, materials), write.ts (courses, structure, pages,
+                    notebooks), files.ts (artifacts, books, uploads, trash, versions), common.ts (helpers)
+  markdown.ts       Markdown → BlockNote blocks (the inverse of export.ts's agent Markdown)
+  events.ts         Change events for open tabs (Server-Sent Events on /api/events)
   themes.ts         Theme files: listing, choosing, creating, duplicating, removing
 shared/
   api.ts            Types shared by client and server
@@ -57,6 +62,7 @@ shared/
 src/
   App.tsx           Routes and the app shell
   api.ts            HTTP client and React Query hooks
+  sync.ts           Live updates: the event stream, reloading a material changed elsewhere, the stale-save base
   store.ts          UI state (zustand), persisted preferences
   editor/           BlockNote schema and custom blocks: annotated image, drawing, callout,
                     formulas, @ mentions, slash menu, toolbar buttons
@@ -87,6 +93,8 @@ Browser ──HTTP──▶ /api/*            Express routes ─▶ repo.ts ─�
         ──HTTP──▶ /uploads/*        files in data/uploads
         ──HTTP──▶ /artifacts/:id/*  an artifact's files in data/artifacts/<id> (sandboxed frame)
         ──WS────▶ /api/kernels/ws   kernels.ts ─ZeroMQ─▶ ipykernel (your Python env)
+        ◀─SSE──── /api/events       events.ts (changes made by agents)
+Agent   ──HTTP──▶ /mcp              mcp.ts ─▶ repo.ts / artifacts.ts / search.ts
 Pyodide (Web Worker in the browser) runs browser-Python notebooks with no server involvement.
 ```
 
@@ -138,7 +146,8 @@ SQLite tables (`server/db.ts`):
   the matching box, comment and passages without re-rendering the editor.
 - **Autosave and flushing.** Each editor debounces saves and registers a *flusher* (`src/flush.ts`); actions that read
   saved state (version history, export, print, trash) call `flushAll()` first.
-- **Versions.** `updateMaterial` stores the previous content when the newest version is ≥ 10 minutes old (max 100).
+- **Versions.** `updateMaterial` stores the previous content when the newest version is ≥ 10 minutes old (max 100),
+  or always with `snapshot: "force"` (MCP edits).
 - **Links.** On each save of a page, its `@` mentions are written to the `links` table (rebuilt on start if empty);
   backlinks are a query on it.
 - **Backups.** `VACUUM INTO` on start (skipped if a fingerprint of row counts and timestamps is unchanged) and on
@@ -176,6 +185,23 @@ SQLite tables (`server/db.ts`):
   which cascade after every page stylesheet — so it wins even over CSS that lazy pages load later. A copy is cached
   in `localStorage` and applied by an inline script in `index.html` before the first paint. Theme previews in Settings
   are `srcdoc` iframes that load the real theme file over a small mock of the app.
+- **MCP.** `/mcp` is a stateless Streamable HTTP endpoint (`@modelcontextprotocol/sdk`): each POST gets a new
+  `McpServer` and transport. It is mounted after `localOnly` and `express.json`, and the tools call `repo.ts`,
+  `artifacts.ts` and `search.ts` directly. Pages travel as Markdown: `export.ts → blocksToMarkdown` writes the agent
+  form (unshifted, unnumbered headings; `/m/<id>` links for mentions; `<mark data-region>` for linked passages; asset
+  URLs as they are; optionally a `<!-- id: … -->` comment before each block), and `markdown.ts` parses it back with
+  `marked`'s lexer (plus small extensions for `$…$` and `$$…$$`) into the block shapes the editor saves. When parsing
+  a replacement, a block that comes back unchanged under its id comment keeps its JSON, and an image whose URL matches
+  an annotated image or drawing being replaced comes back as that block. Every MCP content write uses
+  `updateMaterial(…, { snapshot: "force" })`, so each agent edit has a version to restore. `UserError`s become tool
+  errors with the same sentence.
+- **Live sync.** After each write the MCP layer (only it, so the browser never hears its own saves) emits
+  `{ type: "material", id, updatedAt }` or `{ type: "tree" }` on `events.ts`, streamed by `GET /api/events`. The client
+  (`src/sync.ts`) keeps one `EventSource`: `tree` invalidates the tree, books and trash; `material` for an open page,
+  notebook or image page drops that view's pending save (each saver registers a discard function), refetches it and
+  bumps a per-material revision in the store that is part of the view's `key`, so it remounts with the new content.
+  Every content save sends `baseUpdatedAt` (the newest `updatedAt` the tab has seen, from any fetch or save
+  response); the server answers `409` when the stored row is newer, and the client takes the same reload path.
 - **Guided tour.** `src/tour/steps.tsx` lists steps (target selector, page to open, text); `Tour.tsx` dims the screen
   with a spotlight, places the card beside the target, and remembers completion in `localStorage` (`gloss-tour`).
 

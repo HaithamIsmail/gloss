@@ -16,6 +16,8 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 - [Uploads and slide import](#uploads-and-slide-import)
 - [Themes](#themes)
 - [Python environments and kernels](#python-environments-and-kernels)
+- [Live updates](#live-updates)
+- [MCP for agents](#mcp-for-agents)
 - [Static files](#static-files)
 
 ---
@@ -39,7 +41,7 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 | `POST /api/courses/:id/materials` | `{ title?, kind?: "doc"\|"image"\|"notebook"\|"folder"\|"book"\|"artifact", content?, parentId? }` (for an artifact use `POST /api/courses/:id/artifacts`, which writes its files) | `201` Material · `404` · `400` (*That folder doesn't exist.*, *That folder is in another course.*, *Folders can't go inside other folders.*) |
 | `POST /api/materials` | `{ courseId?: string \| null, title?, kind?, content?, parentId? }` | `201` Material · `404` (unknown course) · `400` (*Only books can live outside a course.*) — with no `courseId`, a book in the library only |
 | `GET /api/materials/:id` | — | Material (`MaterialSummary` + `content`) · `404` |
-| `PATCH /api/materials/:id` | `{ title?, content?, position?, courseId?: string \| null, parentId? }` | MaterialSummary · `400` · `404` |
+| `PATCH /api/materials/:id` | `{ title?, content?, position?, courseId?: string \| null, parentId?, baseUpdatedAt? }` | MaterialSummary · `400` · `404` · `409` (*This changed since you opened it.*, with the stored `updatedAt`) |
 | `DELETE /api/materials/:id` | — | `{ trashId }` (a folder takes its pages) · `404` |
 | `POST /api/materials/:id/append` | `{ blocks: Block[] }` | MaterialSummary (adds blocks to the end of a page) · `400` · `404` |
 | `GET /api/materials/:id/image` | — | `302` to an image page's picture or a book's cover · `404` |
@@ -49,6 +51,10 @@ Errors come back as `{ "error": "message" }` with a 4xx/5xx status (a plain `404
 `PATCH` with `courseId` and/or `parentId` moves the material (`parentId: null` = top level; `courseId: null` puts a
 book in the library with no course, books only, no folder); a folder moved to another course takes its pages. Changing `content` may store the previous content as a version (a book's progress updates
 through `/book` don't).
+
+`baseUpdatedAt` is the `updatedAt` the content was based on. When the body carries `content` and the stored material
+is newer (an agent edited it since), the server answers `409` and writes nothing. Without it, the save goes through
+as it always did. The app sends it with every save.
 
 ## Versions and links
 
@@ -157,6 +163,25 @@ WebSocket messages — client → server: `{ type: "execute", id, code }`, `{ ty
 
 Not API calls, but addresses the app understands: `/m/:id?ann=<highlight id>` opens a book at a highlight,
 `/m/:id?page=N` at a PDF page, `/m/:id?loc=<EPUB CFI>` at an EPUB location.
+
+## Live updates
+
+| Method & path | Response |
+| --- | --- |
+| `GET /api/events` | A Server-Sent Events stream: `data: { "type": "material", "id", "updatedAt" }` when a material's content changed, `data: { "type": "tree" }` when courses, titles, order or the trash changed; a `: keep-alive` comment every 25 s |
+
+Only changes made over MCP are sent (the app's own saves aren't echoed back). The app keeps one stream open and
+reloads what changed.
+
+## MCP for agents
+
+| Method & path | Response |
+| --- | --- |
+| `POST /mcp` | The [Model Context Protocol](https://modelcontextprotocol.io) over Streamable HTTP, stateless (no session ids), JSON responses. The tools are listed in [Agents (MCP)](mcp.md). |
+| `GET /mcp`, `DELETE /mcp` | `405` (no server-to-client stream, no sessions) |
+
+Off with `MCP=off` (then `404`). Like the rest of the API, it answers only requests from this computer (`403`
+otherwise).
 
 ## Static files
 

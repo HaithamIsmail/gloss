@@ -76,6 +76,7 @@ How versions are made:
 
 - While you edit, Gloss keeps the **previous state** at most once every **10 minutes**. The first edit after opening
   an old page always keeps the state before it.
+- An edit by an [agent](mcp.md) always keeps the state before it, so you can undo each one.
 - Up to **100 versions** are kept per material; older ones are dropped.
 - Versions cover the content (text, blocks, regions and comments, notebook cells and outputs). Renaming alone does not
   make a version.

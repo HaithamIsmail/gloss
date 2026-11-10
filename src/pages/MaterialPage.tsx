@@ -16,7 +16,7 @@ const loading = <div className="page page-narrow muted">Loading…</div>;
 export function MaterialPage() {
   const { materialId } = useParams();
   const { data: material, isLoading, error } = useMaterial(materialId);
-  const revision = useUI((s) => s.revision);
+  const revision = useUI((s) => s.revision + ":" + (s.revisions[materialId ?? ""] ?? 0));
 
   useEffect(() => {
     document.getElementById("main-scroll")?.scrollTo({ top: 0 });

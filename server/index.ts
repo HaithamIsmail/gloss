@@ -14,6 +14,8 @@ import * as repo from "./repo";
 import { presentationToPdf, slideConverter, SLIDE_EXTENSIONS } from "./convert";
 import { BACKUP_DIR, backupFile, backupNow, backupOnStart, listBackups } from "./backup";
 import { exportAll, exportCourse, exportMaterial, type ZipStream } from "./export";
+import { eventStream } from "./events";
+import { mcpHandler } from "./mcp";
 import { search } from "./search";
 import { isLocalUpgrade, localHostOnly, localOnly } from "./security";
 import {
@@ -31,6 +33,8 @@ import { seedIfEmpty } from "./seed";
 const isProd = process.env.NODE_ENV === "production";
 // In dev the Vite server owns PORT and proxies /api to API_PORT.
 const PORT = Number((isProd ? process.env.PORT : process.env.API_PORT) ?? 3001);
+// The MCP endpoint for AI agents; MCP=off turns it off.
+const MCP_ON = process.env.MCP !== "off";
 
 seedIfEmpty();
 repo.indexLinksIfEmpty();
@@ -131,6 +135,13 @@ api.patch("/materials/:id", (req, res) => {
   const body = req.body ?? {};
   if (body.content !== undefined && (body.content === null || typeof body.content !== "object")) {
     return void res.status(400).json({ error: "content must be an object or an array of blocks" });
+  }
+  // A save based on older content than what is stored (an agent changed it since) would overwrite that change.
+  if (body.content !== undefined && typeof body.baseUpdatedAt === "number") {
+    const cur = repo.getMaterial(req.params.id);
+    if (cur && cur.updatedAt > body.baseUpdatedAt) {
+      return void res.status(409).json({ error: "This changed since you opened it.", updatedAt: cur.updatedAt });
+    }
   }
   const material = repo.updateMaterial(req.params.id, body);
   if (!material) return void res.sendStatus(404);
@@ -301,6 +312,9 @@ function sendZip(res: express.Response, zip: ZipStream | null) {
 api.get("/export/course/:id", (req, res) => sendZip(res, exportCourse(req.params.id)));
 api.get("/export/material/:id", (req, res) => sendZip(res, exportMaterial(req.params.id)));
 api.get("/export/all", (_req, res) => sendZip(res, exportAll()));
+
+/** Changes made by agents, as Server-Sent Events (see server/events.ts). */
+api.get("/events", eventStream);
 
 api.get("/search", (req, res) => {
   res.json(search(String(req.query.q ?? "")));
@@ -519,6 +533,7 @@ api.post("/envs/install-ipykernel", async (req, res, next) => {
 });
 
 app.use("/api", api);
+if (MCP_ON) app.all("/mcp", mcpHandler);
 app.use("/uploads", express.static(UPLOAD_DIR, { maxAge: "30d", immutable: true }));
 
 // Theme stylesheets and their fonts/images. Links carry ?v=<mtime>, and edits to
@@ -548,7 +563,7 @@ if (isProd) {
   const dist = path.resolve("dist");
   if (fs.existsSync(dist)) {
     app.use(express.static(dist));
-    app.get(/^(?!\/(api|uploads|artifacts|themes|excalidraw-assets|pyodide|pdfjs)\/).*/, (_req, res) =>
+    app.get(/^(?!\/(api|mcp|uploads|artifacts|themes|excalidraw-assets|pyodide|pdfjs)(\/|$)).*/, (_req, res) =>
       res.sendFile(path.join(dist, "index.html")),
     );
   }
@@ -576,7 +591,9 @@ server.on("upgrade", async (req, socket, head) => {
 // Only this computer by default; set HOST to listen elsewhere (and ALLOWED_HOSTS to match).
 const HOST = process.env.HOST ?? "127.0.0.1";
 server.listen(PORT, HOST, () => {
-  console.log(`Gloss API on http://${HOST === "127.0.0.1" ? "localhost" : HOST}:${PORT}`);
+  const origin = `http://${HOST === "127.0.0.1" ? "localhost" : HOST}:${PORT}`;
+  console.log(`Gloss API on ${origin}`);
+  if (MCP_ON) console.log(`MCP for agents on ${origin}/mcp`);
 });
 
 for (const sig of ["SIGINT", "SIGTERM"] as const) {

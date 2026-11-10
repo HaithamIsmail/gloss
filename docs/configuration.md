@@ -22,6 +22,7 @@ reaching it from another device.
 | `PORT` | `3001` | Port of the server in production (`npm start`). |
 | `HOST` | `127.0.0.1` | Address the server listens on. See [Opening Gloss to other devices](#opening-gloss-to-other-devices). |
 | `ALLOWED_HOSTS` | *(empty)* | Extra host names (comma-separated) accepted in requests besides `localhost`, `127.0.0.1` and `::1`. |
+| `MCP` | *(on)* | `MCP=off` turns off the endpoint agents connect to (`/mcp`, see [Agents](mcp.md)). |
 | `NODE_ENV` | — | `production` makes the server serve the built app from `dist/` (set by `npm start`). |
 
 Examples:
@@ -72,7 +73,10 @@ Notebooks can run code on your computer, so the server is locked to your machine
   an `Origin` (as browsers do for cross-site requests), that must be local too — so other websites open in your
   browser can't call it (*403 Requests are only accepted from this computer.*);
 - the notebook kernel WebSocket additionally **requires** a local `Origin`, an existing notebook and a Python
-  environment Gloss discovered.
+  environment Gloss discovered;
+- the MCP endpoint for agents (`/mcp`, see [Agents](mcp.md)) sits behind the same `Host`/`Origin` check, so only
+  programs on this computer can use it. It can read and change all your content, but it can't run code, reach your
+  Python environments or delete anything for good. `MCP=off` turns it off.
 
 There are no user accounts: whoever can open the app can read and change everything.
 

@@ -26,7 +26,11 @@ import type {
 import type { LooseBlock } from "../shared/content";
 import type { PythonEnv } from "../shared/kernel";
 import type { ArtifactFile, FolderSource, MaterialKind } from "../shared/pages";
+import { seen } from "./sync";
 import { toast } from "./toast";
+
+/** Remembers the newest `updatedAt` this tab has for a material (the base of its next save). */
+const sawMaterial = <T extends { id: string; updatedAt: number }>(m: T): T => (seen(m.id, m.updatedAt), m);
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,11 +79,22 @@ export const api = {
     courseId
       ? request<Material>("POST", `/api/courses/${courseId}/materials`, input)
       : request<Material>("POST", "/api/materials", input),
-  material: (id: string) => request<Material>("GET", `/api/materials/${id}`),
+  material: (id: string) => request<Material>("GET", `/api/materials/${id}`).then(sawMaterial),
+  /**
+   * With `content`, pass `baseUpdatedAt` (`baseOf(id)` from sync.ts): the server answers 409 instead
+   * of overwriting a newer change, such as an agent's edit.
+   */
   updateMaterial: (
     id: string,
-    patch: { title?: string; content?: unknown; position?: number; courseId?: string | null; parentId?: string | null },
-  ) => request<MaterialSummary>("PATCH", `/api/materials/${id}`, patch),
+    patch: {
+      title?: string;
+      content?: unknown;
+      position?: number;
+      courseId?: string | null;
+      parentId?: string | null;
+      baseUpdatedAt?: number;
+    },
+  ) => request<MaterialSummary>("PATCH", `/api/materials/${id}`, patch).then(sawMaterial),
   deleteMaterial: (id: string) => request<Trashed>("DELETE", `/api/materials/${id}`),
   /** A partial update to a book (status, position, metadata, one highlight). */
   patchBook: (id: string, patch: BookPatch) => request<Material>("POST", `/api/materials/${id}/book`, patch),
@@ -134,7 +149,7 @@ export const api = {
   versions: (materialId: string) => request<VersionSummary[]>("GET", `/api/materials/${materialId}/versions`),
   version: (id: string) => request<Version>("GET", `/api/versions/${id}`),
   restoreVersion: (materialId: string, versionId: string) =>
-    request<Material>("POST", `/api/materials/${materialId}/versions/${versionId}/restore`),
+    request<Material>("POST", `/api/materials/${materialId}/versions/${versionId}/restore`).then(sawMaterial),
   backlinks: (materialId: string) => request<Backlink[]>("GET", `/api/materials/${materialId}/backlinks`),
   linkTargets: (q: string) => request<LinkTarget[]>("GET", `/api/link-targets?q=${encodeURIComponent(q)}`),
   trash: () => request<TrashItem[]>("GET", "/api/trash"),
